@@ -1,0 +1,468 @@
+/**
+ * File: popup-style.css
+ * Location: /admin/css/popup-style.css
+ * 
+ * Nexus AI WP Translator - Popup Styles
+ */
+
+/* Popup overlay */
+.nexus-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 999999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    animation: nexus-fade-in 0.3s ease-out forwards;
+}
+
+@keyframes nexus-fade-in {
+    to { opacity: 1; }
+}
+
+/* Popup container */
+.nexus-popup-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    width: 90%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow: hidden;
+    transform: translateY(20px);
+    animation: nexus-slide-up 0.3s ease-out forwards;
+}
+
+@keyframes nexus-slide-up {
+    to { transform: translateY(0); }
+}
+
+/* Popup header */
+.nexus-popup-header {
+    background: linear-gradient(135deg, #0073aa, #005177);
+    color: white;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 12px 12px 0 0;
+}
+
+.nexus-popup-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nexus-popup-close {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s ease;
+}
+
+.nexus-popup-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Popup content */
+.nexus-popup-content {
+    padding: 24px;
+}
+
+.nexus-popup-step {
+    min-height: 200px;
+}
+
+/* Language selection */
+.nexus-language-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 16px 0 24px 0;
+}
+
+.nexus-language-option {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    outline: none;
+}
+
+.nexus-language-option:hover {
+    background: #e3f2fd;
+    border-color: #0073aa;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.15);
+}
+
+.nexus-language-option:focus {
+    background: #e3f2fd;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.2);
+}
+
+.nexus-language-option.selected {
+    background: #e3f2fd;
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.2);
+}
+
+.nexus-language-flag {
+    font-size: 24px;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.nexus-language-name {
+    display: block;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.nexus-language-native {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    font-style: italic;
+}
+
+.nexus-no-languages {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 40px 20px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    margin: 16px 0;
+}
+
+/* Progress step */
+.nexus-progress-container {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.nexus-progress-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e9ecef;
+    border-top: 4px solid #0073aa;
+    border-radius: 50%;
+    margin: 0 auto 24px;
+    animation: nexus-spin 1s linear infinite;
+}
+
+@keyframes nexus-spin {
+    to { transform: rotate(360deg); }
+}
+
+.nexus-progress-container h4 {
+    margin: 0 0 8px 0;
+    color: #333;
+    font-size: 18px;
+}
+
+.nexus-progress-status {
+    color: #666;
+    margin: 0 0 20px 0;
+    font-size: 14px;
+}
+
+.nexus-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e9ecef;
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 16px 0;
+}
+
+.nexus-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #005177);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+    width: 0%;
+}
+
+/* Result step */
+.nexus-result-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.nexus-result-icon {
+    font-size: 48px;
+    margin-bottom: 16px;
+    display: block;
+}
+
+.nexus-result-success h4 {
+    color: #28a745;
+    margin: 0 0 12px 0;
+}
+
+.nexus-result-error h4 {
+    color: #dc3545;
+    margin: 0 0 12px 0;
+}
+
+.nexus-result-success p,
+.nexus-result-error p {
+    color: #666;
+    margin: 0 0 20px 0;
+    line-height: 1.5;
+}
+
+.nexus-result-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.nexus-usage-info {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    color: #888;
+    font-size: 12px;
+}
+
+/* Popup actions */
+.nexus-popup-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+
+.nexus-popup-actions .button {
+    min-width: 100px;
+}
+
+/* Body class when popup is open */
+body.nexus-popup-open {
+    overflow: hidden;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .nexus-popup-container {
+        width: 95%;
+        margin: 20px;
+        max-height: calc(100vh - 40px);
+    }
+    
+    .nexus-popup-content {
+        padding: 20px 16px;
+    }
+    
+    .nexus-popup-header {
+        padding: 16px 20px;
+    }
+    
+    .nexus-language-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .nexus-popup-actions {
+        flex-direction: column-reverse;
+    }
+    
+    .nexus-popup-actions .button {
+        width: 100%;
+        margin: 0;
+    }
+    
+    .nexus-result-actions {
+        flex-direction: column;
+    }
+    
+    .nexus-result-actions .button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .nexus-popup-container {
+        width: 100%;
+        height: 100%;
+        max-height: 100vh;
+        border-radius: 0;
+        margin: 0;
+    }
+    
+    .nexus-popup-header {
+        border-radius: 0;
+    }
+    
+    .nexus-popup-step {
+        min-height: auto;
+    }
+    
+    .nexus-language-option {
+        padding: 12px;
+    }
+    
+    .nexus-language-flag {
+        font-size: 20px;
+        margin-bottom: 6px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .nexus-popup-overlay {
+        background: rgba(0, 0, 0, 0.8);
+    }
+    
+    .nexus-language-option {
+        border-width: 3px;
+    }
+    
+    .nexus-language-option:hover,
+    .nexus-language-option:focus,
+    .nexus-language-option.selected {
+        border-width: 3px;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .nexus-popup-overlay,
+    .nexus-popup-container {
+        animation: none;
+    }
+    
+    .nexus-language-option:hover {
+        transform: none;
+    }
+    
+    .nexus-progress-spinner {
+        animation: none;
+        border-top-color: #0073aa;
+    }
+    
+    .nexus-progress-fill {
+        transition: none;
+    }
+}
+
+/* Focus management */
+.nexus-popup-container:focus {
+    outline: none;
+}
+
+.nexus-language-option:focus-visible {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+.nexus-popup-close:focus-visible {
+    outline: 2px solid white;
+    outline-offset: 2px;
+}
+
+/* Loading states */
+.nexus-popup-loading {
+    pointer-events: none;
+    opacity: 0.7;
+}
+
+.nexus-popup-loading .nexus-popup-content {
+    position: relative;
+}
+
+.nexus-popup-loading .nexus-popup-content::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Error states */
+.nexus-popup-error {
+    border-left: 4px solid #dc3545;
+}
+
+.nexus-popup-success {
+    border-left: 4px solid #28a745;
+}
+
+/* Dark mode support (if WordPress admin has dark mode) */
+@media (prefers-color-scheme: dark) {
+    .nexus-popup-container {
+        background: #1e1e1e;
+        color: #ffffff;
+    }
+    
+    .nexus-popup-content {
+        background: #1e1e1e;
+    }
+    
+    .nexus-language-option {
+        background: #2d2d2d;
+        border-color: #404040;
+        color: #ffffff;
+    }
+    
+    .nexus-language-option:hover,
+    .nexus-language-option:focus,
+    .nexus-language-option.selected {
+        background: #0d47a1;
+        border-color: #1976d2;
+    }
+    
+    .nexus-language-name {
+        color: #ffffff;
+    }
+    
+    .nexus-language-native {
+        color: #cccccc;
+    }
+    
+    .nexus-progress-bar {
+        background: #404040;
+    }
+    
+    .nexus-popup-actions {
+        border-top-color: #404040;
+    }
+    
+    .nexus-usage-info {
+        border-top-color: #404040;
+        color: #cccccc;
+    }
+}

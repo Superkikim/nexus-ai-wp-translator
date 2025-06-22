@@ -1,0 +1,366 @@
+# File: nexus-ai-wp-translator.pot
+# Location: /languages/nexus-ai-wp-translator.pot
+#
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Nexus AI WP Translator 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-01 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+
+#: nexus-ai-wp-translator.php:100
+msgid "Nexus AI WP Translator requires PHP version 7.4 or higher. You are running PHP %s."
+msgstr ""
+
+#: nexus-ai-wp-translator.php:108
+msgid "Nexus AI WP Translator requires WordPress version 5.0 or higher. You are running WordPress %s."
+msgstr ""
+
+#: includes/class-translator-api.php:35
+msgid "Claude API not configured"
+msgstr ""
+
+#: includes/class-translator-api.php:179
+msgid "JSON parsing error"
+msgstr ""
+
+#: includes/class-translator-api.php:190
+msgid "Invalid API response"
+msgstr ""
+
+#: includes/class-translator-api.php:200
+msgid "Unknown API error"
+msgstr ""
+
+#: includes/class-translator-api.php:205
+msgid "Invalid request"
+msgstr ""
+
+#: includes/class-translator-api.php:206
+msgid "Invalid or missing API key"
+msgstr ""
+
+#: includes/class-translator-api.php:207
+msgid "Access forbidden - check your API permissions"
+msgstr ""
+
+#: includes/class-translator-api.php:208
+msgid "Rate limit exceeded - try again later"
+msgstr ""
+
+#: includes/class-translator-api.php:209
+msgid "Claude AI server error"
+msgstr ""
+
+#: includes/class-translator-api.php:210
+msgid "Claude service temporarily overloaded"
+msgstr ""
+
+#: includes/class-translator-api.php:298
+msgid "API key not configured"
+msgstr ""
+
+#: includes/class-translator-api.php:307
+msgid "API connection successful"
+msgstr ""
+
+#: includes/class-post-linker.php:203
+msgid "Language"
+msgstr ""
+
+#: includes/class-post-linker.php:280
+msgid "Translate to %s"
+msgstr ""
+
+#: includes/class-post-linker.php:352
+msgid "French"
+msgstr ""
+
+#: includes/class-post-linker.php:353
+msgid "English"
+msgstr ""
+
+#: includes/class-post-linker.php:354
+msgid "Spanish"
+msgstr ""
+
+#: includes/class-post-linker.php:355
+msgid "German"
+msgstr ""
+
+#: includes/class-post-linker.php:356
+msgid "Italian"
+msgstr ""
+
+#: includes/class-post-linker.php:357
+msgid "Portuguese"
+msgstr ""
+
+#: includes/class-post-linker.php:358
+msgid "Dutch"
+msgstr ""
+
+#: includes/class-post-linker.php:359
+msgid "Russian"
+msgstr ""
+
+#: includes/class-post-linker.php:360
+msgid "Japanese"
+msgstr ""
+
+#: includes/class-post-linker.php:361
+msgid "Chinese"
+msgstr ""
+
+#: includes/class-nexus-translator.php:50
+msgid "Post not found"
+msgstr ""
+
+#: includes/class-nexus-translator.php:57
+msgid "Translation already exists"
+msgstr ""
+
+#: includes/class-nexus-translator.php:89
+msgid "Failed to create translated post"
+msgstr ""
+
+#: includes/class-nexus-translator.php:170
+msgid "Translation"
+msgstr ""
+
+#: includes/class-nexus-translator.php:226
+msgid "Translating..."
+msgstr ""
+
+#: includes/class-nexus-translator.php:227
+msgid "Translation completed successfully!"
+msgstr ""
+
+#: includes/class-nexus-translator.php:228
+msgid "Translation failed. Please try again."
+msgstr ""
+
+#: includes/class-nexus-translator.php:229
+msgid "Are you sure you want to translate this post?"
+msgstr ""
+
+#: includes/class-nexus-translator.php:241
+msgid "Settings"
+msgstr ""
+
+#: includes/class-translator-admin.php:39
+msgid "Nexus AI Translator Settings"
+msgstr ""
+
+#: includes/class-translator-admin.php:40
+msgid "AI Translator"
+msgstr ""
+
+#: includes/class-translator-admin.php:51
+msgid "Claude AI API Settings"
+msgstr ""
+
+#: includes/class-translator-admin.php:59
+msgid "Claude API Key"
+msgstr ""
+
+#: includes/class-translator-admin.php:66
+msgid "Claude Model"
+msgstr ""
+
+#: includes/class-translator-admin.php:75
+msgid "Language Settings"
+msgstr ""
+
+#: includes/class-translator-admin.php:83
+msgid "Source Language"
+msgstr ""
+
+#: includes/class-translator-admin.php:90
+msgid "Target Languages"
+msgstr ""
+
+#: includes/class-translator-admin.php:99
+msgid "General Settings"
+msgstr ""
+
+#: includes/class-translator-admin.php:107
+msgid "Show Translation Popup"
+msgstr ""
+
+#: includes/class-translator-admin.php:114
+msgid "Debug Mode"
+msgstr ""
+
+#: includes/class-translator-admin.php:133
+msgid "Configure your Claude AI API settings. You need a valid API key from Anthropic to use translation features."
+msgstr ""
+
+#: includes/class-translator-admin.php:134
+msgid "Get your API key from Anthropic Console"
+msgstr ""
+
+#: includes/class-translator-admin.php:140
+msgid "Configure the source and target languages for translation."
+msgstr ""
+
+#: includes/class-translator-admin.php:146
+msgid "General plugin settings and behavior options."
+msgstr ""
+
+#: includes/class-translator-admin.php:156
+msgid "Test Connection"
+msgstr ""
+
+#: includes/class-translator-admin.php:160
+msgid "API key is configured. Click \"Test Connection\" to verify."
+msgstr ""
+
+#: includes/class-translator-admin.php:162
+msgid "Enter your Claude API key from Anthropic Console."
+msgstr ""
+
+#: includes/class-translator-admin.php:179
+msgid "Choose the Claude model to use for translations."
+msgstr ""
+
+#: includes/class-translator-admin.php:194
+msgid "The primary language of your content."
+msgstr ""
+
+#: includes/class-translator-admin.php:211
+msgid "Languages to translate content into."
+msgstr ""
+
+#: includes/class-translator-admin.php:221
+msgid "Show translation popup when saving posts"
+msgstr ""
+
+#: includes/class-translator-admin.php:222
+msgid "Automatically suggest translation when saving new posts or updates."
+msgstr ""
+
+#: includes/class-translator-admin.php:232
+msgid "Enable debug mode"
+msgstr ""
+
+#: includes/class-translator-admin.php:233
+msgid "Log API requests and responses for debugging. Only enable if needed."
+msgstr ""
+
+#: includes/class-translator-admin.php:314
+msgid "Nexus AI Translator: Please configure your Claude API key in <a href=\"%s\">settings</a> to start translating."
+msgstr ""
+
+#: includes/class-translator-ajax.php:27
+msgid "Security check failed"
+msgstr ""
+
+#: includes/class-translator-ajax.php:32
+msgid "Insufficient permissions"
+msgstr ""
+
+#: includes/class-translator-ajax.php:37
+msgid "Invalid parameters"
+msgstr ""
+
+#: includes/class-translator-ajax.php:43
+msgid "Post not found or no permission"
+msgstr ""
+
+#: includes/class-translator-ajax.php:51
+msgid "Translation completed successfully!"
+msgstr ""
+
+#: includes/class-translator-ajax.php:168
+msgid "Translation updated successfully!"
+msgstr ""
+
+#: includes/class-translator-ajax.php:242
+msgid "Translation deleted successfully"
+msgstr ""
+
+#: includes/class-translator-ajax.php:244
+msgid "Failed to delete translation"
+msgstr ""
+
+#: admin/views/admin-page.php:16
+msgid "Settings saved successfully!"
+msgstr ""
+
+#: admin/views/admin-page.php:22
+msgid "API Settings"
+msgstr ""
+
+#: admin/views/admin-page.php:26
+msgid "Languages"
+msgstr ""
+
+#: admin/views/admin-page.php:30
+msgid "General"
+msgstr ""
+
+#: admin/views/admin-page.php:34
+msgid "Statistics"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:20
+msgid "API Not Configured"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:21
+msgid "Please configure your Claude API key in"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:23
+msgid "settings"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:30
+msgid "Current Language:"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:37
+msgid "Not set"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:39
+msgid "Set Language"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:47
+msgid "Translations:"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:66
+msgid "Update"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:70
+msgid "View"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:86
+msgid "Translate to:"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:99
+msgid "All configured languages are translated"
+msgstr ""
+
+#: admin/views/translation-meta-box.php:105
+msgid "Preparing translation..."
+msgstr ""

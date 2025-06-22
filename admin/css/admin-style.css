@@ -1,0 +1,477 @@
+/**
+ * File: admin-style.css
+ * Location: /admin/css/admin-style.css
+ * 
+ * Nexus AI WP Translator - Admin Styles
+ */
+
+/* Language column in posts list */
+.column-nexus_language {
+    width: 120px;
+}
+
+.nexus-language-badge {
+    display: inline-block;
+    background: #f1f1f1;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.nexus-no-language {
+    color: #999;
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Row actions for translation */
+.row-actions .nexus-translate-link {
+    color: #0073aa;
+}
+
+.row-actions .nexus-translate-link:hover {
+    color: #005177;
+}
+
+/* Meta box styles */
+#nexus-translation-meta-box {
+    font-size: 13px;
+}
+
+#nexus-translation-meta-box .nexus-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    padding: 12px;
+    margin-bottom: 15px;
+}
+
+#nexus-translation-meta-box .nexus-warning p {
+    margin: 0;
+    color: #856404;
+}
+
+#nexus-translation-meta-box .nexus-current-language {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+#nexus-translation-meta-box .nexus-language-badge {
+    background: #e8f4f8;
+    color: #0073aa;
+    margin-left: 5px;
+}
+
+#nexus-translation-meta-box .nexus-translations-list {
+    margin-bottom: 15px;
+}
+
+#nexus-translation-meta-box .nexus-translations-list ul {
+    margin: 8px 0 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+#nexus-translation-meta-box .nexus-translation-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border-left: 3px solid #ddd;
+    font-size: 12px;
+}
+
+#nexus-translation-meta-box .nexus-translation-item.nexus-status-completed {
+    border-left-color: #46b450;
+    background: #f0f8f0;
+}
+
+#nexus-translation-meta-box .nexus-translation-item.nexus-status-outdated {
+    border-left-color: #ffb900;
+    background: #fffbf0;
+}
+
+#nexus-translation-meta-box .nexus-translation-item.nexus-status-error {
+    border-left-color: #dc3232;
+    background: #fdf0f0;
+}
+
+#nexus-translation-meta-box .nexus-translation-item.nexus-status-pending {
+    border-left-color: #0073aa;
+    background: #f0f8ff;
+}
+
+#nexus-translation-meta-box .nexus-translation-item .nexus-status {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#nexus-translation-meta-box .nexus-status-completed {
+    background: #46b450;
+    color: white;
+}
+
+#nexus-translation-meta-box .nexus-status-outdated {
+    background: #ffb900;
+    color: white;
+}
+
+#nexus-translation-meta-box .nexus-status-error {
+    background: #dc3232;
+    color: white;
+}
+
+#nexus-translation-meta-box .nexus-status-pending {
+    background: #0073aa;
+    color: white;
+}
+
+#nexus-translation-meta-box .nexus-translation-actions {
+    display: flex;
+    gap: 5px;
+    margin-left: auto;
+}
+
+#nexus-translation-meta-box .nexus-translation-actions-section {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+#nexus-translation-meta-box .nexus-translate-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+#nexus-translation-meta-box .nexus-translate-btn {
+    font-size: 11px;
+    padding: 6px 10px;
+    height: auto;
+    line-height: 1.3;
+    border-radius: 4px;
+    background: #0073aa;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+#nexus-translation-meta-box .nexus-translate-btn:hover {
+    background: #005177;
+}
+
+#nexus-translation-meta-box .nexus-translate-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+#nexus-translation-meta-box .nexus-all-translated {
+    color: #46b450;
+    font-weight: 500;
+    margin: 10px 0;
+    font-size: 12px;
+}
+
+#nexus-translation-meta-box .nexus-all-translated .dashicons {
+    color: #46b450;
+    vertical-align: middle;
+    font-size: 16px;
+}
+
+/* Progress indicator */
+#nexus-translation-progress {
+    margin-top: 15px;
+    padding: 12px;
+    background: #f0f8ff;
+    border: 1px solid #cce7ff;
+    border-radius: 4px;
+}
+
+#nexus-translation-progress .nexus-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+#nexus-translation-progress .nexus-progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #0073aa, #005177);
+    border-radius: 4px;
+    animation: nexus-progress-animation 2s linear infinite;
+    width: 30%;
+}
+
+@keyframes nexus-progress-animation {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+}
+
+#nexus-translation-progress .nexus-progress-text {
+    margin: 0;
+    font-size: 12px;
+    color: #0073aa;
+    font-weight: 500;
+}
+
+/* Result messages */
+#nexus-translation-result {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+#nexus-translation-result.success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+#nexus-translation-result.error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+#nexus-translation-result p {
+    margin: 0 0 8px 0;
+}
+
+#nexus-translation-result p:last-child {
+    margin-bottom: 0;
+}
+
+#nexus-translation-result a {
+    color: inherit;
+    text-decoration: none;
+    font-weight: 500;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 3px;
+    margin-right: 5px;
+    display: inline-block;
+    margin-top: 5px;
+}
+
+#nexus-translation-result a:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Settings page styles */
+.nexus-info-box {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.nexus-info-box h3 {
+    margin-top: 0;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.nexus-info-box h4 {
+    color: #666;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.nexus-info-box ol {
+    padding-left: 20px;
+}
+
+.nexus-info-box ol li {
+    margin-bottom: 8px;
+}
+
+.nexus-info-box table {
+    margin-top: 15px;
+}
+
+.nexus-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.nexus-stat-card {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.nexus-stat-card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.nexus-usage-stats {
+    display: grid;
+    gap: 10px;
+}
+
+.nexus-usage-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background: #f7f7f7;
+    border-radius: 4px;
+    border-left: 3px solid #0073aa;
+}
+
+.nexus-usage-label {
+    font-weight: 500;
+    color: #666;
+}
+
+.nexus-usage-value {
+    font-weight: bold;
+    color: #0073aa;
+    font-size: 1.2em;
+}
+
+/* API test result styling */
+#api-test-result {
+    margin-top: 10px;
+}
+
+#api-test-result .notice {
+    margin: 0;
+    padding: 8px 12px;
+}
+
+/* Target languages checkboxes */
+.nexus-target-languages {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 10px;
+    background: white;
+}
+
+.nexus-target-languages label {
+    display: block;
+    margin-bottom: 8px;
+    padding: 4px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+}
+
+.nexus-target-languages label:hover {
+    background: #f0f8ff;
+}
+
+.nexus-target-languages input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .nexus-stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    #nexus-translation-meta-box .nexus-translate-buttons {
+        flex-direction: column;
+    }
+    
+    #nexus-translation-meta-box .nexus-translate-btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    #nexus-translation-meta-box .nexus-translation-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    #nexus-translation-meta-box .nexus-translation-actions {
+        align-self: flex-end;
+    }
+}
+
+/* Animation for highlighting elements */
+.nexus-highlight {
+    animation: nexus-highlight-pulse 2s ease-in-out;
+}
+
+@keyframes nexus-highlight-pulse {
+    0%, 100% { 
+        background-color: transparent;
+        box-shadow: none;
+    }
+    50% { 
+        background-color: #fff3cd;
+        box-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+    }
+}
+
+/* Loading states */
+.nexus-loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.nexus-loading::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #ccc;
+    border-top-color: #0073aa;
+    border-radius: 50%;
+    animation: nexus-spin 1s linear infinite;
+}
+
+@keyframes nexus-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Accessibility improvements */
+.nexus-translate-btn:focus,
+.nexus-update-translation:focus {
+    outline: 2px solid #0073aa;
+    outline-offset: 2px;
+}
+
+.nexus-sr-only {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}

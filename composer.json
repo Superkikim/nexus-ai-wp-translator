@@ -1,0 +1,68 @@
+{
+    "_comment": "File: composer.json | Location: /composer.json (repository root)",
+    "name": "superkikim/nexus-ai-wp-translator",
+    "description": "Modern automatic translation plugin for WordPress powered by Claude AI",
+    "type": "wordpress-plugin",
+    "keywords": [
+        "wordpress",
+        "translation",
+        "claude-ai",
+        "anthropic",
+        "multilingual",
+        "ai",
+        "plugin"
+    ],
+    "homepage": "https://github.com/superkikim/nexus-ai-wp-translator",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "superkikim",
+            "email": "your.email@example.com",
+            "homepage": "https://your-website.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/superkikim/nexus-ai-wp-translator/issues",
+        "source": "https://github.com/superkikim/nexus-ai-wp-translator",
+        "docs": "https://github.com/superkikim/nexus-ai-wp-translator/wiki"
+    },
+    "require": {
+        "php": ">=7.4",
+        "composer/installers": "^1.0 || ^2.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0",
+        "wp-coding-standards/wpcs": "^2.3",
+        "phpcompatibility/phpcompatibility-wp": "^2.1",
+        "dealerdirect/phpcodesniffer-composer-installer": "^0.7"
+    },
+    "autoload": {
+        "psr-4": {
+            "Nexus\\Translator\\": "includes/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Nexus\\Translator\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "phpcs": "phpcs --standard=WordPress --extensions=php --ignore=*/vendor/*,*/node_modules/* .",
+        "phpcbf": "phpcbf --standard=WordPress --extensions=php --ignore=*/vendor/*,*/node_modules/* .",
+        "phpunit": "phpunit",
+        "test": [
+            "@phpcs",
+            "@phpunit"
+        ]
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "extra": {
+        "installer-name": "nexus-ai-wp-translator"
+    }
+}
