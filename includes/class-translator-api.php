@@ -277,7 +277,9 @@ class Translator_API {
      */
     private function is_debug_mode() {
         $options = get_option('nexus_translator_options', array());
-        return !empty($options['debug_mode']);
+        $debug = !empty($options['debug_mode']);
+        error_log('NEXUS DEBUG: Debug mode check = ' . ($debug ? 'TRUE' : 'FALSE'));
+        return $debug;
     }
     
     /**

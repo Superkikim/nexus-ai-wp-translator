@@ -34,6 +34,7 @@ class Translator_Admin {
      * Constructor
      */
     public function __construct() {
+        error_log('NEXUS DEBUG: Translator_Admin constructor called');
         $this->language_manager = new Language_Manager();
         $this->init_hooks();
     }
@@ -169,6 +170,7 @@ class Translator_Admin {
      * Render settings page
      */
     public function render_settings_page() {
+        error_log('NEXUS DEBUG: Settings page accessed');
         if (isset($_GET['tab'])) {
             $active_tab = sanitize_text_field($_GET['tab']);
         } else {
