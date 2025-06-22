@@ -277,8 +277,8 @@ class Nexus_Translator {
      * Enqueue admin scripts
      */
     public function enqueue_admin_scripts($hook) {
-        // Only load on post edit screens
-        if (!in_array($hook, array('post.php', 'post-new.php', 'edit.php'))) {
+        // Load on post edit screens AND settings page
+        if (!in_array($hook, array('post.php', 'post-new.php', 'edit.php', 'settings_page_nexus-translator-settings'))) {
             return;
         }
         
