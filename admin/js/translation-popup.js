@@ -391,7 +391,8 @@
          * Check if popup should auto-show
          */
         checkAutoShow: function() {
-            // Check URL parameters or other triggers
+            // This method is now primarily used for URL-based triggers
+            // The main popup trigger is now handled via PHP injection in admin_footer
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('nexus_translate')) {
                 const postId = urlParams.get('post_id') || urlParams.get('post');

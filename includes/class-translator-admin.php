@@ -431,7 +431,43 @@ class Translator_Admin {
             return;
         }
         
-        // Store flag to show popup on next page load
-        set_transient('nexus_show_translation_popup_' . $post_id, true, 30);
+        // Don't show popup if this is already a translation
+        $post_linker = new Post_Linker();
+        if ($post_linker->get_original_post_id($post_id)) {
+            return; // This is a translation, not an original
+        }
+        
+        // Get available target languages (languages not yet translated)
+        $target_languages = $language_settings['target_languages'] ?? array('en');
+        $translations = $post_linker->get_all_translations($post_id);
+        $available_languages = array();
+        
+        foreach ($target_languages as $target_lang) {
+            if (!isset($translations[$target_lang])) {
+                $language_manager = new Language_Manager();
+                $available_languages[] = array(
+                    'code' => $target_lang,
+                    'name' => $language_manager->get_language_name($target_lang),
+                    'flag' => $language_manager->get_language_flag($target_lang)
+                );
+            }
+        }
+        
+        // Only show popup if there are languages to translate to
+        if (!empty($available_languages)) {
+            add_action('admin_footer', function() use ($post_id, $available_languages) {
+                ?>
+                <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    if (typeof TranslationPopup !== 'undefined') {
+                        setTimeout(function() {
+                            TranslationPopup.showPopup(<?php echo $post_id; ?>, <?php echo json_encode($available_languages); ?>);
+                        }, 1000);
+                    }
+                });
+                </script>
+                <?php
+            });
+        }
     }
 }
