@@ -10,8 +10,16 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-$language_manager = new Language_Manager();
-$api = new Translator_API();
+if (!isset($language_manager)) {
+    $language_manager = new Language_Manager();
+}
+if (!isset($api)) {
+    $api = new Translator_API();
+}
+if (!isset($post_linker)) {
+    $post_linker = new Post_Linker();
+}
+
 $is_api_configured = $api->is_api_configured();
 ?>
 
@@ -28,7 +36,6 @@ $is_api_configured = $api->is_api_configured();
         </div>
     <?php else: ?>
         
-        <!-- Current Post Language -->
         <div class="nexus-current-language">
             <strong><?php _e('Current Language:', 'nexus-ai-wp-translator'); ?></strong>
             <?php if ($current_language): ?>
@@ -44,7 +51,6 @@ $is_api_configured = $api->is_api_configured();
             <?php endif; ?>
         </div>
         
-        <!-- Existing Translations -->
         <?php if (!empty($translations) && count($translations) > 1): ?>
             <div class="nexus-translations-list">
                 <strong><?php _e('Translations:', 'nexus-ai-wp-translator'); ?></strong>
@@ -53,7 +59,7 @@ $is_api_configured = $api->is_api_configured();
                         <?php if ($translated_post_id !== $post->ID): ?>
                             <?php
                             $translated_post = get_post($translated_post_id);
-                            $status = $this->post_linker->get_translation_status($translated_post_id);
+                            $status = $post_linker->get_translation_status($translated_post_id);
                             $status_class = 'nexus-status-' . $status;
                             ?>
                             <li class="nexus-translation-item <?php echo esc_attr($status_class); ?>">
@@ -66,7 +72,7 @@ $is_api_configured = $api->is_api_configured();
                                 </span>
                                 
                                 <div class="nexus-translation-actions">
-                                    <?php if ($status === Post_Linker::STATUS_OUTDATED): ?>
+                                    <?php if ($status === 'outdated'): ?>
                                         <button type="button" 
                                                 class="button button-small nexus-update-translation" 
                                                 data-original-id="<?php echo $post->ID; ?>"
@@ -88,7 +94,6 @@ $is_api_configured = $api->is_api_configured();
             </div>
         <?php endif; ?>
         
-        <!-- Translation Actions -->
         <div class="nexus-translation-actions-section">
             <?php
             $language_settings = get_option('nexus_translator_language_settings', array());
@@ -123,7 +128,6 @@ $is_api_configured = $api->is_api_configured();
             <?php endif; ?>
         </div>
         
-        <!-- Progress Indicator -->
         <div id="nexus-translation-progress" class="nexus-progress" style="display: none;">
             <div class="nexus-progress-bar">
                 <div class="nexus-progress-fill"></div>
@@ -131,7 +135,6 @@ $is_api_configured = $api->is_api_configured();
             <p class="nexus-progress-text"><?php _e('Preparing translation...', 'nexus-ai-wp-translator'); ?></p>
         </div>
         
-        <!-- Result Messages -->
         <div id="nexus-translation-result" class="nexus-result" style="display: none;"></div>
         
     <?php endif; ?>

@@ -270,6 +270,11 @@ class Nexus_Translator {
         $translations = $this->post_linker->get_all_translations($post->ID);
         $current_language = $this->post_linker->get_post_language($post->ID);
         
+        // Pass necessary instances to the view
+        $language_manager = $this->language_manager;
+        $api = $this->api;
+        $post_linker = $this->post_linker;
+        
         include NEXUS_TRANSLATOR_ADMIN_DIR . 'views/translation-meta-box.php';
     }
     

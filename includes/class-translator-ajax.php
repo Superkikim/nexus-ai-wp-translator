@@ -37,13 +37,18 @@ class Translator_AJAX {
      * Handle post translation request
      */
     public function handle_translate_post() {
+        error_log('Nexus Translator: Translation request received');
+        error_log('Nexus Translator: POST data: ' . print_r($_POST, true));
+        
         // Verify nonce
         if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce')) {
+            error_log('Nexus Translator: Nonce verification failed');
             wp_die(__('Security check failed', 'nexus-ai-wp-translator'));
         }
         
         // Check capabilities
         if (!current_user_can('edit_posts')) {
+            error_log('Nexus Translator: Insufficient permissions');
             wp_send_json_error(__('Insufficient permissions', 'nexus-ai-wp-translator'));
         }
         
@@ -51,21 +56,31 @@ class Translator_AJAX {
         $post_id = (int) $_POST['post_id'];
         $target_language = sanitize_text_field($_POST['target_language']);
         
+        error_log("Nexus Translator: Processing translation - Post ID: $post_id, Target: $target_language");
+        
         if (!$post_id || !$target_language) {
+            error_log('Nexus Translator: Invalid parameters provided');
             wp_send_json_error(__('Invalid parameters', 'nexus-ai-wp-translator'));
         }
         
         // Verify post exists and user can edit it
         $post = get_post($post_id);
         if (!$post || !current_user_can('edit_post', $post_id)) {
+            error_log('Nexus Translator: Post not found or no permission');
             wp_send_json_error(__('Post not found or no permission', 'nexus-ai-wp-translator'));
         }
+        
+        error_log("Nexus Translator: Post found: {$post->post_title}");
         
         // Initialize translator
         $translator = new Nexus_Translator();
         
+        error_log('Nexus Translator: Starting translation process');
+        
         // Perform translation
         $result = $translator->translate_post($post_id, $target_language);
+        
+        error_log('Nexus Translator: Translation result: ' . print_r($result, true));
         
         if ($result['success']) {
             wp_send_json_success(array(
@@ -76,6 +91,7 @@ class Translator_AJAX {
                 'usage' => $result['usage']
             ));
         } else {
+            error_log('Nexus Translator: Translation failed: ' . $result['error']);
             wp_send_json_error($result['error']);
         }
     }
@@ -301,7 +317,7 @@ class Translator_AJAX {
     }
     
     /**
-     * Parse translated content (same as in main class)
+     * Parse translated content
      */
     private function parse_translated_content($content) {
         $parts = array(

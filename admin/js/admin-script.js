@@ -14,14 +14,18 @@
          * Initialize
          */
         init: function() {
+            console.log('Nexus Translator: Initializing');
             this.bindEvents();
             this.checkForTranslationPopup();
+            console.log('Nexus Translator: Initialization complete');
         },
 
         /**
          * Bind events
          */
         bindEvents: function() {
+            console.log('Nexus Translator: Binding events');
+            
             // Test API connection
             $(document).on('click', '#test-api-connection', this.testApiConnection);
             
@@ -36,6 +40,19 @@
             
             // Set language button
             $(document).on('click', '#nexus-set-language', this.showLanguageSelector);
+            
+            // Debug button counts
+            setTimeout(function() {
+                const translateBtns = $('.nexus-translate-btn').length;
+                const updateBtns = $('.nexus-update-translation').length;
+                const testBtn = $('#test-api-connection').length;
+                
+                console.log('Nexus Translator: Found buttons - Translate:', translateBtns, 'Update:', updateBtns, 'Test API:', testBtn);
+                
+                if (translateBtns === 0 && $('#nexus-translation-meta-box').length) {
+                    console.log('Nexus Translator: Meta box exists but no translate buttons found');
+                }
+            }, 1000);
         },
 
         /**
@@ -43,6 +60,7 @@
          */
         testApiConnection: function(e) {
             e.preventDefault();
+            console.log('Nexus Translator: Testing API connection');
             
             const $button = $(this);
             const $result = $('#api-test-result');
@@ -55,6 +73,7 @@
                 nonce: nexusTranslator.nonce
             })
             .done(function(response) {
+                console.log('Nexus Translator: API test response:', response);
                 if (response.success) {
                     $result.html('<div class="notice notice-success inline"><p><strong>Success!</strong> ' + response.data.message + '</p></div>');
                     if (response.data.test_translation) {
@@ -64,7 +83,8 @@
                     $result.html('<div class="notice notice-error inline"><p><strong>Error:</strong> ' + response.data + '</p></div>');
                 }
             })
-            .fail(function() {
+            .fail(function(xhr, status, error) {
+                console.error('Nexus Translator: API test failed:', status, error);
                 $result.html('<div class="notice notice-error inline"><p><strong>Error:</strong> Failed to connect to server.</p></div>');
             })
             .always(function() {
@@ -77,12 +97,16 @@
          */
         handleTranslation: function(e) {
             e.preventDefault();
+            console.log('Nexus Translator: Translation button clicked');
             
             const $button = $(this);
             const postId = $button.data('post-id');
             const targetLang = $button.data('target-lang');
             
+            console.log('Nexus Translator: Translation params - Post ID:', postId, 'Target Lang:', targetLang);
+            
             if (!postId || !targetLang) {
+                console.error('Nexus Translator: Invalid parameters');
                 alert('Invalid parameters');
                 return;
             }
@@ -95,6 +119,7 @@
          */
         handleUpdateTranslation: function(e) {
             e.preventDefault();
+            console.log('Nexus Translator: Update translation button clicked');
             
             const $button = $(this);
             const originalId = $button.data('original-id');
@@ -112,6 +137,7 @@
          */
         handleRowActionTranslation: function(e) {
             e.preventDefault();
+            console.log('Nexus Translator: Row action translation clicked');
             
             const $link = $(this);
             const postId = $link.data('post-id');
@@ -128,11 +154,18 @@
          * Start translation process
          */
         startTranslation: function(postId, targetLang, $trigger) {
-            // Show progress
-            this.showProgress('Preparing translation...');
+            console.log('Nexus Translator: Starting translation for post', postId, 'to', targetLang);
             
-            // Disable trigger
+            if (typeof nexusTranslator === 'undefined') {
+                console.error('Nexus Translator: nexusTranslator object not found');
+                alert('Translation configuration not loaded. Please refresh the page.');
+                return;
+            }
+            
+            this.showProgress('Preparing translation...');
             $trigger.prop('disabled', true);
+            
+            console.log('Nexus Translator: Sending AJAX request');
             
             $.post(nexusTranslator.ajaxUrl, {
                 action: 'nexus_translate_post',
@@ -141,6 +174,7 @@
                 nonce: nexusTranslator.nonce
             })
             .done(function(response) {
+                console.log('Nexus Translator: Translation response:', response);
                 if (response.success) {
                     NexusTranslator.showSuccess(
                         'Translation completed successfully!',
@@ -148,15 +182,19 @@
                         response.data.view_link
                     );
                     
-                    // Refresh meta box if we're on post edit page
                     if ($('#nexus-translation-meta-box').length) {
-                        location.reload();
+                        console.log('Nexus Translator: Reloading page to refresh meta box');
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000);
                     }
                 } else {
+                    console.error('Nexus Translator: Translation failed:', response.data);
                     NexusTranslator.showError(response.data || 'Translation failed');
                 }
             })
-            .fail(function(xhr) {
+            .fail(function(xhr, status, error) {
+                console.error('Nexus Translator: AJAX failed:', status, error, xhr.responseText);
                 let errorMessage = 'Server error occurred';
                 if (xhr.responseJSON && xhr.responseJSON.data) {
                     errorMessage = xhr.responseJSON.data;
@@ -173,6 +211,8 @@
          * Update existing translation
          */
         updateTranslation: function(originalId, translatedId, $trigger) {
+            console.log('Nexus Translator: Updating translation');
+            
             this.showProgress('Updating translation...');
             $trigger.prop('disabled', true);
             
@@ -183,6 +223,7 @@
                 nonce: nexusTranslator.nonce
             })
             .done(function(response) {
+                console.log('Nexus Translator: Update response:', response);
                 if (response.success) {
                     NexusTranslator.showSuccess(
                         'Translation updated successfully!',
@@ -190,7 +231,6 @@
                         response.data.view_link
                     );
                     
-                    // Update status in meta box
                     $trigger.closest('.nexus-translation-item')
                         .removeClass('nexus-status-outdated')
                         .addClass('nexus-status-completed')
@@ -204,7 +244,8 @@
                     NexusTranslator.showError(response.data || 'Update failed');
                 }
             })
-            .fail(function() {
+            .fail(function(xhr, status, error) {
+                console.error('Nexus Translator: Update failed:', status, error);
                 NexusTranslator.showError('Server error occurred');
             })
             .always(function() {
@@ -217,10 +258,13 @@
          * Show progress indicator
          */
         showProgress: function(message) {
+            console.log('Nexus Translator: Showing progress:', message);
             const $progress = $('#nexus-translation-progress');
             if ($progress.length) {
                 $progress.find('.nexus-progress-text').text(message);
                 $progress.show();
+            } else {
+                console.log('Nexus Translator: Progress element not found');
             }
             
             this.hideResult();
@@ -237,6 +281,7 @@
          * Show success message
          */
         showSuccess: function(message, editLink, viewLink) {
+            console.log('Nexus Translator: Showing success:', message);
             const $result = $('#nexus-translation-result');
             if ($result.length) {
                 let html = '<p>' + message + '</p>';
@@ -257,7 +302,7 @@
                     .html(html)
                     .show();
             } else {
-                // Fallback to alert if no result container
+                console.log('Nexus Translator: Result element not found, using alert');
                 alert(message);
             }
         },
@@ -266,6 +311,7 @@
          * Show error message
          */
         showError: function(message) {
+            console.log('Nexus Translator: Showing error:', message);
             const $result = $('#nexus-translation-result');
             if ($result.length) {
                 $result
@@ -274,7 +320,7 @@
                     .html('<p>' + message + '</p>')
                     .show();
             } else {
-                // Fallback to alert if no result container
+                console.log('Nexus Translator: Result element not found, using alert');
                 alert('Error: ' + message);
             }
         },
@@ -291,8 +337,8 @@
          */
         showLanguageSelector: function(e) {
             e.preventDefault();
+            console.log('Nexus Translator: Language selector clicked');
             
-            // Simple implementation - could be enhanced with a proper modal
             const languages = {
                 'fr': '🇫🇷 French',
                 'en': '🇺🇸 English',
@@ -309,7 +355,6 @@
             const selectedLang = prompt('Select language for this post:\n\n' + options + '\nEnter language code:');
             
             if (selectedLang && languages[selectedLang]) {
-                // Update post meta (this would need to be implemented)
                 alert('Language setting functionality would be implemented here');
             }
         },
@@ -318,14 +363,10 @@
          * Check for translation popup after save
          */
         checkForTranslationPopup: function() {
-            // This would check for a transient and show popup if needed
-            // Implementation depends on how you want to handle the popup trigger
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.get('nexus_show_popup') === '1') {
-                // Show translation popup
                 setTimeout(function() {
                     if (confirm('Would you like to translate this post now?')) {
-                        // Trigger translation dialog
                         NexusTranslator.showTranslationDialog();
                     }
                 }, 1000);
@@ -336,8 +377,6 @@
          * Show translation dialog
          */
         showTranslationDialog: function() {
-            // This would show a more sophisticated dialog
-            // For now, just focus on the meta box
             const $metaBox = $('#nexus-translation-meta-box');
             if ($metaBox.length) {
                 $('html, body').animate({
@@ -352,27 +391,18 @@
         }
     };
 
-    // Initialize when document is ready
     $(document).ready(function() {
+        console.log('Nexus Translator: Document ready');
+        
+        if (typeof nexusTranslator === 'undefined') {
+            console.error('Nexus Translator: nexusTranslator object not found');
+        } else {
+            console.log('Nexus Translator: Configuration loaded:', nexusTranslator);
+        }
+        
         NexusTranslator.init();
     });
 
-    // Add highlight animation CSS
-    $('<style>')
-        .prop('type', 'text/css')
-        .html(`
-            .nexus-highlight {
-                animation: nexus-highlight-pulse 2s ease-in-out;
-            }
-            
-            @keyframes nexus-highlight-pulse {
-                0%, 100% { background-color: transparent; }
-                50% { background-color: #fff3cd; }
-            }
-        `)
-        .appendTo('head');
-
-    // Expose to global scope if needed
     window.NexusTranslator = NexusTranslator;
 
 })(jQuery);
