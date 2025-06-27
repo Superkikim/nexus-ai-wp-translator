@@ -30,6 +30,11 @@ class Nexus_Translator {
     private $language_manager;
     
     /**
+     * Translation panel instance
+     */
+    private $translation_panel;
+    
+    /**
      * Constructor
      */
     public function __construct() {
@@ -44,15 +49,13 @@ class Nexus_Translator {
         $this->api = new Translator_API();
         $this->post_linker = new Post_Linker();
         $this->language_manager = new Language_Manager();
+        $this->translation_panel = new Translation_Panel();
     }
     
     /**
      * Initialize hooks
      */
     private function init_hooks() {
-        // Post meta box
-        add_action('add_meta_boxes', array($this, 'add_translation_meta_box'));
-        
         // Enqueue scripts and styles
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         
@@ -158,12 +161,12 @@ class Nexus_Translator {
         // Parse translated content
         $content_parts = $this->parse_translated_content($translated_content);
         
-        // Prepare post data
+        // Prepare post data - Default to draft for manual review
         $post_data = array(
             'post_title' => $content_parts['title'],
             'post_content' => $content_parts['content'],
             'post_excerpt' => $content_parts['excerpt'],
-            'post_status' => 'draft', // Start as draft for review
+            'post_status' => 'draft',
             'post_type' => $original_post->post_type,
             'post_author' => $original_post->post_author,
             'menu_order' => $original_post->menu_order,
@@ -245,40 +248,6 @@ class Nexus_Translator {
     }
     
     /**
-     * Add translation meta box
-     */
-    public function add_translation_meta_box() {
-        $post_types = array('post', 'page');
-        
-        foreach ($post_types as $post_type) {
-            add_meta_box(
-                'nexus-translation-box',
-                __('Translation', 'nexus-ai-wp-translator'),
-                array($this, 'render_translation_meta_box'),
-                $post_type,
-                'side',
-                'high'
-            );
-        }
-    }
-    
-    /**
-     * Render translation meta box
-     */
-    public function render_translation_meta_box($post) {
-        // Get translations
-        $translations = $this->post_linker->get_all_translations($post->ID);
-        $current_language = $this->post_linker->get_post_language($post->ID);
-        
-        // Pass necessary instances to the view
-        $language_manager = $this->language_manager;
-        $api = $this->api;
-        $post_linker = $this->post_linker;
-        
-        include NEXUS_TRANSLATOR_ADMIN_DIR . 'views/translation-meta-box.php';
-    }
-    
-    /**
      * Enqueue admin scripts
      */
     public function enqueue_admin_scripts($hook) {
@@ -294,38 +263,24 @@ class Nexus_Translator {
             NEXUS_TRANSLATOR_VERSION
         );
         
-        wp_enqueue_style(
-            'nexus-translator-popup',
-            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/css/popup-style.css',
-            array(),
-            NEXUS_TRANSLATOR_VERSION
-        );
-        
         wp_enqueue_script(
-            'nexus-translator-admin',
-            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-script.js',
-            array('jquery'),
-            NEXUS_TRANSLATOR_VERSION,
-            true
-        );
-        
-        wp_enqueue_script(
-            'nexus-translator-popup',
-            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/translation-popup.js',
+            'nexus-translator-panel',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/translation-panel.js',
             array('jquery'),
             NEXUS_TRANSLATOR_VERSION,
             true
         );
         
         // Localize script
-        wp_localize_script('nexus-translator-admin', 'nexusTranslator', array(
+        wp_localize_script('nexus-translator-panel', 'nexusTranslator', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nexus_translator_nonce'),
             'strings' => array(
                 'translating' => __('Translating...', 'nexus-ai-wp-translator'),
                 'success' => __('Translation completed successfully!', 'nexus-ai-wp-translator'),
                 'error' => __('Translation failed. Please try again.', 'nexus-ai-wp-translator'),
-                'confirmTranslate' => __('Are you sure you want to translate this post?', 'nexus-ai-wp-translator')
+                'confirmTranslate' => __('Are you sure you want to translate this post?', 'nexus-ai-wp-translator'),
+                'selectLanguages' => __('Please select at least one target language.', 'nexus-ai-wp-translator')
             )
         ));
     }
@@ -363,5 +318,12 @@ class Nexus_Translator {
      */
     public function get_language_manager() {
         return $this->language_manager;
+    }
+    
+    /**
+     * Get translation panel instance
+     */
+    public function get_translation_panel() {
+        return $this->translation_panel;
     }
 }

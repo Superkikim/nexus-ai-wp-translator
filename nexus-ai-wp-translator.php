@@ -120,6 +120,7 @@ final class Nexus_AI_WP_Translator {
         require_once NEXUS_TRANSLATOR_INCLUDES_DIR . 'class-translator-api.php';
         require_once NEXUS_TRANSLATOR_INCLUDES_DIR . 'class-post-linker.php';
         require_once NEXUS_TRANSLATOR_INCLUDES_DIR . 'class-language-manager.php';
+        require_once NEXUS_TRANSLATOR_INCLUDES_DIR . 'class-translation-panel.php';
         
         // Admin classes
         if (is_admin()) {
@@ -213,7 +214,7 @@ final class Nexus_AI_WP_Translator {
             'source_language' => 'fr',
             'target_languages' => array('en'),
             'auto_translate' => false,
-            'show_popup' => true
+            'show_popup' => false
         );
         
         update_option('nexus_translator_language_settings', $default_languages);
@@ -298,6 +299,10 @@ if (!function_exists('nexus_translator_uninstall')) {
             $wpdb->delete($wpdb->postmeta, array('meta_key' => '_nexus_translation_of'));
             $wpdb->delete($wpdb->postmeta, array('meta_key' => '_nexus_language'));
             $wpdb->delete($wpdb->postmeta, array('meta_key' => '_nexus_translation_status'));
+            $wpdb->delete($wpdb->postmeta, array('meta_key' => '_nexus_auto_translate'));
+            $wpdb->delete($wpdb->postmeta, array('meta_key' => '_nexus_target_languages'));
+            $wpdb->delete($wpdb->postmeta, array('meta_key' => '_nexus_last_translation_results'));
+            $wpdb->delete($wpdb->postmeta, array('meta_key' => '_nexus_translation_timestamp'));
             
             // Remove translation links (dynamic meta keys)
             $wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE meta_key LIKE '_nexus_has_translation_%'");

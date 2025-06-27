@@ -15,17 +15,6 @@ if (!defined('ABSPATH')) {
 class Translator_Admin {
     
     /**
-     * Render preserve data field
-     */
-    public function render_preserve_data_field() {
-        $preserve_data = get_option('nexus_translator_preserve_on_uninstall', false);
-        
-        echo '<input type="checkbox" id="preserve_on_uninstall" name="nexus_translator_preserve_on_uninstall" value="1"' . checked($preserve_data, true, false) . '> ';
-        echo '<label for="preserve_on_uninstall">' . __('Keep translation data when uninstalling plugin', 'nexus-ai-wp-translator') . '</label>';
-        echo '<p class="description">' . __('If checked, translation relationships will be preserved when the plugin is uninstalled. This allows you to reinstall later without losing translation connections. If unchecked, all translation data will be completely removed.', 'nexus-ai-wp-translator') . '</p>';
-    }
-    
-    /**
      * Language manager instance
      */
     private $language_manager;
@@ -34,7 +23,6 @@ class Translator_Admin {
      * Constructor
      */
     public function __construct() {
-        error_log('NEXUS DEBUG: Translator_Admin constructor called');
         $this->language_manager = new Language_Manager();
         $this->init_hooks();
     }
@@ -51,9 +39,6 @@ class Translator_Admin {
         
         // Admin notices
         add_action('admin_notices', array($this, 'admin_notices'));
-        
-        // Post save hook for auto-translation popup
-        add_action('save_post', array($this, 'maybe_show_translation_popup'), 10, 2);
     }
     
     /**
@@ -142,14 +127,6 @@ class Translator_Admin {
         ));
         
         add_settings_field(
-            'show_popup',
-            __('Show Translation Popup', 'nexus-ai-wp-translator'),
-            array($this, 'render_show_popup_field'),
-            'nexus_translator_general_settings',
-            'nexus_translator_general_section'
-        );
-        
-        add_settings_field(
             'debug_mode',
             __('Debug Mode', 'nexus-ai-wp-translator'),
             array($this, 'render_debug_mode_field'),
@@ -170,7 +147,6 @@ class Translator_Admin {
      * Render settings page
      */
     public function render_settings_page() {
-        error_log('NEXUS DEBUG: Settings page accessed');
         if (isset($_GET['tab'])) {
             $active_tab = sanitize_text_field($_GET['tab']);
         } else {
@@ -279,18 +255,6 @@ class Translator_Admin {
     }
     
     /**
-     * Render show popup field
-     */
-    public function render_show_popup_field() {
-        $settings = get_option('nexus_translator_language_settings', array());
-        $show_popup = $settings['show_popup'] ?? true;
-        
-        echo '<input type="checkbox" id="show_popup" name="nexus_translator_language_settings[show_popup]" value="1"' . checked($show_popup, true, false) . '> ';
-        echo '<label for="show_popup">' . __('Show translation popup when saving posts', 'nexus-ai-wp-translator') . '</label>';
-        echo '<p class="description">' . __('Automatically suggest translation when saving new posts or updates.', 'nexus-ai-wp-translator') . '</p>';
-    }
-    
-    /**
      * Render debug mode field
      */
     public function render_debug_mode_field() {
@@ -300,6 +264,17 @@ class Translator_Admin {
         echo '<input type="checkbox" id="debug_mode" name="nexus_translator_options[debug_mode]" value="1"' . checked($debug_mode, true, false) . '> ';
         echo '<label for="debug_mode">' . __('Enable debug mode', 'nexus-ai-wp-translator') . '</label>';
         echo '<p class="description">' . __('Log API requests and responses for debugging. Only enable if needed.', 'nexus-ai-wp-translator') . '</p>';
+    }
+    
+    /**
+     * Render preserve data field
+     */
+    public function render_preserve_data_field() {
+        $preserve_data = get_option('nexus_translator_preserve_on_uninstall', false);
+        
+        echo '<input type="checkbox" id="preserve_on_uninstall" name="nexus_translator_preserve_on_uninstall" value="1"' . checked($preserve_data, true, false) . '> ';
+        echo '<label for="preserve_on_uninstall">' . __('Keep translation data when uninstalling plugin', 'nexus-ai-wp-translator') . '</label>';
+        echo '<p class="description">' . __('If checked, translation relationships will be preserved when the plugin is uninstalled. This allows you to reinstall later without losing translation connections. If unchecked, all translation data will be completely removed.', 'nexus-ai-wp-translator') . '</p>';
     }
     
     /**
@@ -350,10 +325,6 @@ class Translator_Admin {
                 }
             }
             $sanitized['target_languages'] = $valid_targets;
-        }
-        
-        if (isset($input['show_popup'])) {
-            $sanitized['show_popup'] = (bool) $input['show_popup'];
         }
         
         return $sanitized;
@@ -412,64 +383,5 @@ class Translator_Admin {
             $screen->id === 'settings_page_nexus-translator-settings' ||
             in_array($screen->base, array('post', 'edit'))
         );
-    }
-    
-    /**
-     * Maybe show translation popup after save
-     */
-    public function maybe_show_translation_popup($post_id, $post) {
-        // Skip auto-saves, revisions, and non-main post types
-        if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
-            return;
-        }
-        
-        if (!in_array($post->post_type, array('post', 'page'))) {
-            return;
-        }
-        
-        // Check if popup should be shown
-        $language_settings = get_option('nexus_translator_language_settings', array());
-        if (empty($language_settings['show_popup'])) {
-            return;
-        }
-        
-        // Don't show popup if this is already a translation
-        $post_linker = new Post_Linker();
-        if ($post_linker->get_original_post_id($post_id)) {
-            return; // This is a translation, not an original
-        }
-        
-        // Get available target languages (languages not yet translated)
-        $target_languages = $language_settings['target_languages'] ?? array('en');
-        $translations = $post_linker->get_all_translations($post_id);
-        $available_languages = array();
-        
-        foreach ($target_languages as $target_lang) {
-            if (!isset($translations[$target_lang])) {
-                $language_manager = new Language_Manager();
-                $available_languages[] = array(
-                    'code' => $target_lang,
-                    'name' => $language_manager->get_language_name($target_lang),
-                    'flag' => $language_manager->get_language_flag($target_lang)
-                );
-            }
-        }
-        
-        // Only show popup if there are languages to translate to
-        if (!empty($available_languages)) {
-            add_action('admin_footer', function() use ($post_id, $available_languages) {
-                ?>
-                <script>
-                document.addEventListener('DOMContentLoaded', function() {
-                    if (typeof TranslationPopup !== 'undefined') {
-                        setTimeout(function() {
-                            TranslationPopup.showPopup(<?php echo $post_id; ?>, <?php echo json_encode($available_languages); ?>);
-                        }, 1000);
-                    }
-                });
-                </script>
-                <?php
-            });
-        }
     }
 }
