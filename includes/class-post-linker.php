@@ -232,29 +232,41 @@ class Post_Linker {
      * Display language column content
      */
     public function display_language_column($column, $post_id) {
-        if ($column === 'nexus_language') {
-            $language = $this->get_post_language($post_id);
-            if ($language) {
-                $language_name = $this->get_language_name($language);
-                $flag = $this->get_language_flag($language);
-                echo sprintf('<span class="nexus-language-badge">%s %s</span>', $flag, $language_name);
-                
-                // Show translation links
-                $translations = $this->get_all_translations($post_id);
-                if (count($translations) > 1) {
-                    echo '<br><small>';
-                    foreach ($translations as $lang => $trans_id) {
-                        if ($trans_id !== $post_id) {
-                            $edit_link = get_edit_post_link($trans_id);
-                            $flag = $this->get_language_flag($lang);
-                            echo sprintf(' <a href="%s" title="%s">%s</a>', $edit_link, $this->get_language_name($lang), $flag);
-                        }
+        if ($column !== 'nexus_language') {
+            return;
+        }
+        
+        $language = $this->get_post_language($post_id);
+        
+        if ($language) {
+            $language_name = $this->get_language_name($language);
+            $flag = $this->get_language_flag($language);
+            
+            echo '<div class="nexus-language-display">';
+            echo '<span class="nexus-language-badge">';
+            echo '<span class="nexus-flag">' . $flag . '</span> ';
+            echo '<span class="nexus-lang-name">' . esc_html($language_name) . '</span>';
+            echo '</span>';
+            
+            // Show translation links
+            $translations = $this->get_all_translations($post_id);
+            if (count($translations) > 1) {
+                echo '<div class="nexus-translation-links">';
+                foreach ($translations as $lang => $trans_id) {
+                    if ($trans_id !== $post_id) {
+                        $edit_link = get_edit_post_link($trans_id);
+                        $trans_flag = $this->get_language_flag($lang);
+                        $trans_name = $this->get_language_name($lang);
+                        echo '<a href="' . esc_url($edit_link) . '" title="' . esc_attr($trans_name) . '" class="nexus-trans-link">';
+                        echo $trans_flag;
+                        echo '</a> ';
                     }
-                    echo '</small>';
                 }
-            } else {
-                echo '<span class="nexus-no-language">—</span>';
+                echo '</div>';
             }
+            echo '</div>';
+        } else {
+            echo '<span class="nexus-no-language">—</span>';
         }
     }
     
