@@ -280,7 +280,9 @@ class Nexus_Translator {
                 'success' => __('Translation completed successfully!', 'nexus-ai-wp-translator'),
                 'error' => __('Translation failed. Please try again.', 'nexus-ai-wp-translator'),
                 'confirmTranslate' => __('Are you sure you want to translate this post?', 'nexus-ai-wp-translator'),
-                'selectLanguages' => __('Please select at least one target language.', 'nexus-ai-wp-translator')
+                'selectLanguages' => __('Please select at least one target language.', 'nexus-ai-wp-translator'),
+                'translateNow' => __('Translate Now', 'nexus-ai-wp-translator'),
+                'testing' => __('Testing...', 'nexus-ai-wp-translator')
             )
         ));
     }

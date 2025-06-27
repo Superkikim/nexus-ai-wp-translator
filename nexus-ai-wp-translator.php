@@ -212,7 +212,7 @@ final class Nexus_AI_WP_Translator {
         // Default language settings
         $default_languages = array(
             'source_language' => 'fr',
-            'target_languages' => array('en'),
+            'target_languages' => array('en', 'es', 'de', 'it'),
             'auto_translate' => false,
             'show_popup' => false
         );

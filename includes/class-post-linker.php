@@ -324,16 +324,26 @@ class Post_Linker {
      */
     private function get_language_name($code) {
         $languages = array(
-            'fr' => __('French', 'nexus-ai-wp-translator'),
+            'fr' => __('Français', 'nexus-ai-wp-translator'),
             'en' => __('English', 'nexus-ai-wp-translator'),
-            'es' => __('Spanish', 'nexus-ai-wp-translator'),
-            'de' => __('German', 'nexus-ai-wp-translator'),
-            'it' => __('Italian', 'nexus-ai-wp-translator'),
-            'pt' => __('Portuguese', 'nexus-ai-wp-translator'),
-            'nl' => __('Dutch', 'nexus-ai-wp-translator'),
-            'ru' => __('Russian', 'nexus-ai-wp-translator'),
-            'ja' => __('Japanese', 'nexus-ai-wp-translator'),
-            'zh' => __('Chinese', 'nexus-ai-wp-translator')
+            'es' => __('Español', 'nexus-ai-wp-translator'),
+            'de' => __('Deutsch', 'nexus-ai-wp-translator'),
+            'it' => __('Italiano', 'nexus-ai-wp-translator'),
+            'pt' => __('Português', 'nexus-ai-wp-translator'),
+            'nl' => __('Nederlands', 'nexus-ai-wp-translator'),
+            'ru' => __('Русский', 'nexus-ai-wp-translator'),
+            'ja' => __('日本語', 'nexus-ai-wp-translator'),
+            'zh' => __('中文', 'nexus-ai-wp-translator'),
+            'ar' => __('العربية', 'nexus-ai-wp-translator'),
+            'hi' => __('हिन्दी', 'nexus-ai-wp-translator'),
+            'ko' => __('한국어', 'nexus-ai-wp-translator'),
+            'sv' => __('Svenska', 'nexus-ai-wp-translator'),
+            'da' => __('Dansk', 'nexus-ai-wp-translator'),
+            'no' => __('Norsk', 'nexus-ai-wp-translator'),
+            'fi' => __('Suomi', 'nexus-ai-wp-translator'),
+            'pl' => __('Polski', 'nexus-ai-wp-translator'),
+            'tr' => __('Türkçe', 'nexus-ai-wp-translator'),
+            'he' => __('עברית', 'nexus-ai-wp-translator')
         );
         
         return $languages[$code] ?? strtoupper($code);
@@ -353,7 +363,17 @@ class Post_Linker {
             'nl' => '🇳🇱',
             'ru' => '🇷🇺',
             'ja' => '🇯🇵',
-            'zh' => '🇨🇳'
+            'zh' => '🇨🇳',
+            'ar' => '🇸🇦',
+            'hi' => '🇮🇳',
+            'ko' => '🇰🇷',
+            'sv' => '🇸🇪',
+            'da' => '🇩🇰',
+            'no' => '🇳🇴',
+            'fi' => '🇫🇮',
+            'pl' => '🇵🇱',
+            'tr' => '🇹🇷',
+            'he' => '🇮🇱'
         );
         
         return $flags[$code] ?? '🌍';

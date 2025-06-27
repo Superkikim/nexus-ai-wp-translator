@@ -29,6 +29,7 @@ class Translation_Panel {
         add_action('add_meta_boxes', array($this, 'add_translation_panel'));
         add_action('save_post', array($this, 'handle_auto_translation'), 20, 2);
         add_action('admin_notices', array($this, 'show_translation_results'));
+        add_action('admin_footer', array($this, 'add_publish_screen_info'));
     }
     
     public function add_translation_panel() {
@@ -59,11 +60,28 @@ class Translation_Panel {
         
         $language_settings = get_option('nexus_translator_language_settings', array());
         $target_languages = $language_settings['target_languages'] ?? array('en');
+        $source_language = $language_settings['source_language'] ?? 'fr';
+        
+        // Ensure post has source language set
         $current_language = $this->post_linker->get_post_language($post->ID);
+        if (!$current_language) {
+            update_post_meta($post->ID, '_nexus_language', $source_language);
+            $current_language = $source_language;
+        }
+        
         $translations = $this->post_linker->get_all_translations($post->ID);
         
         ?>
         <div id="nexus-translation-panel">
+            
+            <!-- Current Language Display -->
+            <div class="nexus-panel-section nexus-current-lang">
+                <strong><?php _e('Post Language:', 'nexus-ai-wp-translator'); ?></strong>
+                <span class="nexus-language-badge">
+                    <?php echo $this->language_manager->get_language_flag($current_language); ?>
+                    <?php echo esc_html($this->language_manager->get_language_name($current_language)); ?>
+                </span>
+            </div>
             
             <!-- Auto Translation Setting -->
             <div class="nexus-panel-section">
@@ -72,10 +90,10 @@ class Translation_Panel {
                            name="nexus_auto_translate" 
                            value="1" 
                            <?php checked($auto_translate, '1'); ?>>
-                    <strong><?php _e('Translate automatically on save', 'nexus-ai-wp-translator'); ?></strong>
+                    <strong><?php _e('Translate automatically on publish', 'nexus-ai-wp-translator'); ?></strong>
                 </label>
                 <p class="nexus-help-text">
-                    <?php _e('When enabled, this post will be automatically translated to selected languages when saved.', 'nexus-ai-wp-translator'); ?>
+                    <?php _e('When enabled, this post will be automatically translated to selected languages when published.', 'nexus-ai-wp-translator'); ?>
                 </p>
             </div>
             
@@ -132,7 +150,7 @@ class Translation_Panel {
             </div>
             
             <!-- Translation Statistics -->
-            <?php if (!empty($translations)): ?>
+            <?php if (!empty($translations) && count($translations) > 1): ?>
             <div class="nexus-panel-section nexus-stats-section">
                 <h4><?php _e('Translation Status', 'nexus-ai-wp-translator'); ?></h4>
                 <div class="nexus-translation-stats">
@@ -185,6 +203,13 @@ class Translation_Panel {
         .nexus-panel-section:last-child {
             border-bottom: none;
             margin-bottom: 0;
+        }
+        
+        .nexus-current-lang {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #0073aa;
         }
         
         .nexus-auto-translate-label {
@@ -454,8 +479,15 @@ class Translation_Panel {
         update_post_meta($post_id, '_nexus_auto_translate', $auto_translate);
         update_post_meta($post_id, '_nexus_target_languages', $target_languages);
         
+        // Only auto-translate when publishing for the first time
         if ($auto_translate === '1' && !empty($target_languages) && $post->post_status === 'publish') {
-            $this->perform_auto_translation($post_id, $target_languages);
+            // Check if this is a new publish (not an update)
+            $is_new_publish = !get_post_meta($post_id, '_nexus_published_before', true);
+            
+            if ($is_new_publish) {
+                update_post_meta($post_id, '_nexus_published_before', '1');
+                $this->perform_auto_translation($post_id, $target_languages);
+            }
         }
     }
     
@@ -463,36 +495,49 @@ class Translation_Panel {
         $translator = new Nexus_Translator();
         $results = array();
         
+        // Get current language
+        $current_language = $this->post_linker->get_post_language($post_id);
+        
         foreach ($target_languages as $target_lang) {
-            if (!$this->post_linker->has_translation($post_id, $target_lang)) {
-                $result = $translator->translate_post($post_id, $target_lang);
+            // Skip if target language is same as source
+            if ($target_lang === $current_language) {
+                continue;
+            }
+            
+            // Skip if translation already exists
+            if ($this->post_linker->has_translation($post_id, $target_lang)) {
+                continue;
+            }
+            
+            $result = $translator->translate_post($post_id, $target_lang);
+            
+            if ($result['success']) {
+                // Publish the translation immediately for auto-translate
+                wp_update_post(array(
+                    'ID' => $result['translated_post_id'],
+                    'post_status' => 'publish'
+                ));
                 
-                if ($result['success']) {
-                    // Publish the translation immediately for auto-translate
-                    wp_update_post(array(
-                        'ID' => $result['translated_post_id'],
-                        'post_status' => 'publish'
-                    ));
-                    
-                    $results[] = array(
-                        'success' => true,
-                        'language' => $target_lang,
-                        'post_id' => $result['translated_post_id'],
-                        'edit_link' => $result['edit_link'],
-                        'view_link' => $result['view_link']
-                    );
-                } else {
-                    $results[] = array(
-                        'success' => false,
-                        'language' => $target_lang,
-                        'error' => $result['error']
-                    );
-                }
+                $results[] = array(
+                    'success' => true,
+                    'language' => $target_lang,
+                    'post_id' => $result['translated_post_id'],
+                    'edit_link' => $result['edit_link'],
+                    'view_link' => $result['view_link']
+                );
+            } else {
+                $results[] = array(
+                    'success' => false,
+                    'language' => $target_lang,
+                    'error' => $result['error']
+                );
             }
         }
         
-        update_post_meta($post_id, '_nexus_last_translation_results', $results);
-        update_post_meta($post_id, '_nexus_translation_timestamp', current_time('timestamp'));
+        if (!empty($results)) {
+            update_post_meta($post_id, '_nexus_last_translation_results', $results);
+            update_post_meta($post_id, '_nexus_translation_timestamp', current_time('timestamp'));
+        }
     }
     
     public function show_translation_results() {
@@ -564,5 +609,44 @@ class Translation_Panel {
         // Clear the results after showing
         delete_post_meta($post->ID, '_nexus_last_translation_results');
         delete_post_meta($post->ID, '_nexus_translation_timestamp');
+    }
+    
+    public function add_publish_screen_info() {
+        global $post;
+        
+        if (!$post || !in_array($post->post_type, array('post', 'page'))) {
+            return;
+        }
+        
+        $auto_translate = get_post_meta($post->ID, '_nexus_auto_translate', true);
+        $selected_languages = get_post_meta($post->ID, '_nexus_target_languages', true) ?: array();
+        
+        if ($auto_translate && !empty($selected_languages)) {
+            ?>
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Add translation info to publish confirmation screen
+                const publishButton = document.querySelector('#publish');
+                const prePublishPanel = document.querySelector('.editor-post-publish-panel');
+                
+                if (prePublishPanel) {
+                    const translationInfo = document.createElement('div');
+                    translationInfo.style.cssText = 'background: #f0f8ff; border: 1px solid #0073aa; border-radius: 4px; padding: 12px; margin: 12px 0;';
+                    translationInfo.innerHTML = `
+                        <h4 style="margin: 0 0 8px 0; color: #0073aa;">🌍 Auto-Translation Enabled</h4>
+                        <p style="margin: 0; font-size: 13px;">This post will be automatically translated to: <strong><?php echo implode(', ', array_map(array($this->language_manager, 'get_language_name'), $selected_languages)); ?></strong></p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #666;">Translations will be created as drafts for review after publishing.</p>
+                    `;
+                    
+                    // Insert before publish button
+                    const publishSection = prePublishPanel.querySelector('.editor-post-publish-panel__header');
+                    if (publishSection) {
+                        publishSection.parentNode.insertBefore(translationInfo, publishSection.nextSibling);
+                    }
+                }
+            });
+            </script>
+            <?php
+        }
     }
 }

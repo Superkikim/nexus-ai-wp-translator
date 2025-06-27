@@ -84,7 +84,7 @@
             
             if (selectedCount > 0) {
                 $button.prop('disabled', false);
-                $button.text(nexusTranslator.strings.translateNow || 'Translate Now (' + selectedCount + ')');
+                $button.text((nexusTranslator.strings.translateNow || 'Translate Now') + ' (' + selectedCount + ')');
             } else {
                 $button.prop('disabled', true);
                 $button.text(nexusTranslator.strings.translateNow || 'Translate Now');
@@ -232,16 +232,26 @@
          */
         getLanguageName: function(code) {
             const languages = {
-                'fr': 'French',
+                'fr': 'Français',
                 'en': 'English',
-                'es': 'Spanish',
-                'de': 'German',
-                'it': 'Italian',
-                'pt': 'Portuguese',
-                'nl': 'Dutch',
-                'ru': 'Russian',
-                'ja': 'Japanese',
-                'zh': 'Chinese'
+                'es': 'Español',
+                'de': 'Deutsch',
+                'it': 'Italiano',
+                'pt': 'Português',
+                'nl': 'Nederlands',
+                'ru': 'Русский',
+                'ja': '日本語',
+                'zh': '中文',
+                'ar': 'العربية',
+                'hi': 'हिन्दी',
+                'ko': '한국어',
+                'sv': 'Svenska',
+                'da': 'Dansk',
+                'no': 'Norsk',
+                'fi': 'Suomi',
+                'pl': 'Polski',
+                'tr': 'Türkçe',
+                'he': 'עברית'
             };
             
             return languages[code] || code.toUpperCase();

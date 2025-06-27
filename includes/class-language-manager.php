@@ -19,7 +19,7 @@ class Language_Manager {
      */
     private $supported_languages = array(
         'fr' => array(
-            'name' => 'French',
+            'name' => 'Français',
             'native_name' => 'Français',
             'flag' => '🇫🇷',
             'direction' => 'ltr'
@@ -31,52 +31,112 @@ class Language_Manager {
             'direction' => 'ltr'
         ),
         'es' => array(
-            'name' => 'Spanish',
+            'name' => 'Español',
             'native_name' => 'Español',
             'flag' => '🇪🇸',
             'direction' => 'ltr'
         ),
         'de' => array(
-            'name' => 'German',
+            'name' => 'Deutsch',
             'native_name' => 'Deutsch',
             'flag' => '🇩🇪',
             'direction' => 'ltr'
         ),
         'it' => array(
-            'name' => 'Italian',
+            'name' => 'Italiano',
             'native_name' => 'Italiano',
             'flag' => '🇮🇹',
             'direction' => 'ltr'
         ),
         'pt' => array(
-            'name' => 'Portuguese',
+            'name' => 'Português',
             'native_name' => 'Português',
             'flag' => '🇵🇹',
             'direction' => 'ltr'
         ),
         'nl' => array(
-            'name' => 'Dutch',
+            'name' => 'Nederlands',
             'native_name' => 'Nederlands',
             'flag' => '🇳🇱',
             'direction' => 'ltr'
         ),
         'ru' => array(
-            'name' => 'Russian',
+            'name' => 'Русский',
             'native_name' => 'Русский',
             'flag' => '🇷🇺',
             'direction' => 'ltr'
         ),
         'ja' => array(
-            'name' => 'Japanese',
+            'name' => '日本語',
             'native_name' => '日本語',
             'flag' => '🇯🇵',
             'direction' => 'ltr'
         ),
         'zh' => array(
-            'name' => 'Chinese',
+            'name' => '中文',
             'native_name' => '中文',
             'flag' => '🇨🇳',
             'direction' => 'ltr'
+        ),
+        'ar' => array(
+            'name' => 'العربية',
+            'native_name' => 'العربية',
+            'flag' => '🇸🇦',
+            'direction' => 'rtl'
+        ),
+        'hi' => array(
+            'name' => 'हिन्दी',
+            'native_name' => 'हिन्दी',
+            'flag' => '🇮🇳',
+            'direction' => 'ltr'
+        ),
+        'ko' => array(
+            'name' => '한국어',
+            'native_name' => '한국어',
+            'flag' => '🇰🇷',
+            'direction' => 'ltr'
+        ),
+        'sv' => array(
+            'name' => 'Svenska',
+            'native_name' => 'Svenska',
+            'flag' => '🇸🇪',
+            'direction' => 'ltr'
+        ),
+        'da' => array(
+            'name' => 'Dansk',
+            'native_name' => 'Dansk',
+            'flag' => '🇩🇰',
+            'direction' => 'ltr'
+        ),
+        'no' => array(
+            'name' => 'Norsk',
+            'native_name' => 'Norsk',
+            'flag' => '🇳🇴',
+            'direction' => 'ltr'
+        ),
+        'fi' => array(
+            'name' => 'Suomi',
+            'native_name' => 'Suomi',
+            'flag' => '🇫🇮',
+            'direction' => 'ltr'
+        ),
+        'pl' => array(
+            'name' => 'Polski',
+            'native_name' => 'Polski',
+            'flag' => '🇵🇱',
+            'direction' => 'ltr'
+        ),
+        'tr' => array(
+            'name' => 'Türkçe',
+            'native_name' => 'Türkçe',
+            'flag' => '🇹🇷',
+            'direction' => 'ltr'
+        ),
+        'he' => array(
+            'name' => 'עברית',
+            'native_name' => 'עברית',
+            'flag' => '🇮🇱',
+            'direction' => 'rtl'
         )
     );
     
@@ -169,7 +229,7 @@ class Language_Manager {
      */
     public function get_target_languages() {
         $settings = get_option('nexus_translator_language_settings', array());
-        return $settings['target_languages'] ?? array('en');
+        return $settings['target_languages'] ?? array('en', 'es', 'de', 'it');
     }
     
     /**
