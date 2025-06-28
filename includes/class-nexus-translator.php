@@ -49,7 +49,11 @@ class Nexus_Translator {
         $this->api = new Translator_API();
         $this->post_linker = new Post_Linker();
         $this->language_manager = new Language_Manager();
-        $this->translation_panel = new Translation_Panel();
+        
+        // Only initialize translation panel in admin
+        if (is_admin()) {
+            $this->translation_panel = new Translation_Panel();
+        }
     }
     
     /**
@@ -59,8 +63,162 @@ class Nexus_Translator {
         // Enqueue scripts and styles
         add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         
+        // Add meta box
+        add_action('add_meta_boxes', array($this, 'add_translation_meta_box'));
+        
         // Plugin action links
         add_filter('plugin_action_links_' . plugin_basename(NEXUS_TRANSLATOR_PLUGIN_FILE), array($this, 'plugin_action_links'));
+        
+        // Save post hooks
+        add_action('save_post', array($this, 'handle_post_save'), 10, 2);
+        
+        // Admin notices
+        add_action('admin_notices', array($this, 'show_admin_notices'));
+    }
+    
+    /**
+     * Add translation meta box
+     */
+    public function add_translation_meta_box() {
+        $post_types = array('post', 'page');
+        
+        foreach ($post_types as $post_type) {
+            add_meta_box(
+                'nexus-translation-meta-box',
+                __('Translation', 'nexus-ai-wp-translator'),
+                array($this, 'render_translation_meta_box'),
+                $post_type,
+                'side',
+                'high'
+            );
+        }
+    }
+    
+    /**
+     * Render translation meta box
+     */
+    public function render_translation_meta_box($post) {
+        // Get required instances
+        $language_manager = $this->language_manager;
+        $api = $this->api;
+        $post_linker = $this->post_linker;
+        
+        // Get current language and translations
+        $current_language = $post_linker->get_post_language($post->ID);
+        $translations = $post_linker->get_all_translations($post->ID);
+        
+        // If no language set, set default
+        if (!$current_language) {
+            $settings = get_option('nexus_translator_language_settings', array());
+            $source_language = $settings['source_language'] ?? 'fr';
+            update_post_meta($post->ID, '_nexus_language', $source_language);
+            $current_language = $source_language;
+        }
+        
+        // Include meta box view
+        include NEXUS_TRANSLATOR_ADMIN_DIR . 'views/translation-meta-box.php';
+    }
+    
+    /**
+     * Handle post save
+     */
+    public function handle_post_save($post_id, $post) {
+        // Skip autosaves and revisions
+        if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+            return;
+        }
+        
+        // Skip if not our post types
+        if (!in_array($post->post_type, array('post', 'page'))) {
+            return;
+        }
+        
+        // Check if this was a publish action with translation intent
+        if (isset($_POST['nexus_auto_translate']) && $_POST['nexus_auto_translate'] === '1') {
+            $this->handle_auto_translation($post_id);
+        }
+    }
+    
+    /**
+     * Handle automatic translation
+     */
+    private function handle_auto_translation($post_id) {
+        if (!isset($_POST['nexus_target_languages']) || !is_array($_POST['nexus_target_languages'])) {
+            return;
+        }
+        
+        $target_languages = $_POST['nexus_target_languages'];
+        $results = array();
+        
+        foreach ($target_languages as $target_lang) {
+            // Skip if translation already exists
+            if ($this->post_linker->has_translation($post_id, $target_lang)) {
+                continue;
+            }
+            
+            $result = $this->translate_post($post_id, $target_lang);
+            $results[] = array(
+                'language' => $target_lang,
+                'success' => $result['success'],
+                'message' => $result['success'] ? 'Translation created' : $result['error'],
+                'post_id' => $result['success'] ? $result['translated_post_id'] : null
+            );
+        }
+        
+        // Store results for display
+        if (!empty($results)) {
+            update_post_meta($post_id, '_nexus_last_translation_results', $results);
+            update_post_meta($post_id, '_nexus_translation_timestamp', current_time('timestamp'));
+        }
+    }
+    
+    /**
+     * Show admin notices
+     */
+    public function show_admin_notices() {
+        global $post;
+        
+        if (!$post || !in_array($post->post_type, array('post', 'page'))) {
+            return;
+        }
+        
+        $results = get_post_meta($post->ID, '_nexus_last_translation_results', true);
+        $timestamp = get_post_meta($post->ID, '_nexus_translation_timestamp', true);
+        
+        if (!$results || !$timestamp) {
+            return;
+        }
+        
+        // Only show recent results (last 5 minutes)
+        if ((current_time('timestamp') - $timestamp) > 300) {
+            delete_post_meta($post->ID, '_nexus_last_translation_results');
+            delete_post_meta($post->ID, '_nexus_translation_timestamp');
+            return;
+        }
+        
+        $success_count = count(array_filter($results, function($r) { return $r['success']; }));
+        $total_count = count($results);
+        
+        if ($success_count > 0) {
+            echo '<div class="notice notice-success is-dismissible">';
+            echo '<p><strong>' . sprintf(__('Translation Results: %d of %d completed successfully', 'nexus-ai-wp-translator'), $success_count, $total_count) . '</strong></p>';
+            
+            foreach ($results as $result) {
+                if ($result['success']) {
+                    $edit_link = get_edit_post_link($result['post_id']);
+                    echo '<p>✅ ' . $this->language_manager->get_language_name($result['language']) . ': ';
+                    echo '<a href="' . $edit_link . '" target="_blank">' . __('Edit Translation', 'nexus-ai-wp-translator') . '</a></p>';
+                } else {
+                    echo '<p>❌ ' . $this->language_manager->get_language_name($result['language']) . ': ' . esc_html($result['message']) . '</p>';
+                }
+            }
+            
+            echo '</div>';
+        }
+        
+        // Clear results after showing
+        delete_post_meta($post->ID, '_nexus_last_translation_results');
+        delete_post_meta($post->ID, '_nexus_translation_timestamp');
     }
     
     /**
@@ -264,17 +422,18 @@ class Nexus_Translator {
         );
         
         wp_enqueue_script(
-            'nexus-translator-panel',
-            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/translation-panel.js',
+            'nexus-translator-admin',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-script.js',
             array('jquery'),
             NEXUS_TRANSLATOR_VERSION,
             true
         );
         
         // Localize script
-        wp_localize_script('nexus-translator-panel', 'nexusTranslator', array(
+        wp_localize_script('nexus-translator-admin', 'nexusTranslator', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nexus_translator_nonce'),
+            'settingsUrl' => admin_url('admin.php?page=nexus-translator-settings'),
             'strings' => array(
                 'translating' => __('Translating...', 'nexus-ai-wp-translator'),
                 'success' => __('Translation completed successfully!', 'nexus-ai-wp-translator'),
