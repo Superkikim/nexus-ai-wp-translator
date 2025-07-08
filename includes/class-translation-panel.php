@@ -30,6 +30,9 @@ class Translation_Panel {
         add_action('save_post', array($this, 'handle_auto_translation'), 20, 2);
         add_action('admin_notices', array($this, 'show_translation_results'));
         add_action('admin_footer', array($this, 'add_publish_screen_info'));
+        
+        // Note: Script loading is now handled by the main Nexus_Translator class
+        // using the modular architecture (admin-core.js + admin-modules.js)
     }
     
     public function add_translation_panel() {
