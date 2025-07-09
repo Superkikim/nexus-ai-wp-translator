@@ -393,8 +393,11 @@ class Translator_Admin {
         $settings = get_option('nexus_translator_api_settings', array());
         $api_key = $settings['claude_api_key'] ?? '';
         
-        echo '<input type="password" id="claude_api_key" name="nexus_translator_api_settings[claude_api_key]" value="' . esc_attr($api_key) . '" class="regular-text" />';
-        echo '<button type="button" id="test-api-connection" class="button" style="margin-left: 10px;">' . __('Test Connection', 'nexus-ai-wp-translator') . '</button>';
+        // Determine initial button label
+        $button_label = empty($api_key) ? __('Save & Test', 'nexus-ai-wp-translator') : __('Test Connection', 'nexus-ai-wp-translator');
+        
+        echo '<input type="password" id="claude_api_key" name="nexus_translator_api_settings[claude_api_key]" value="' . esc_attr($api_key) . '" class="regular-text" data-original-value="' . esc_attr($api_key) . '" />';
+        echo '<button type="button" id="test-api-connection" class="button" style="margin-left: 10px;">' . $button_label . '</button>';
         echo '<div id="api-test-result"></div>';
         
         if (!empty($api_key)) {
@@ -402,8 +405,7 @@ class Translator_Admin {
         } else {
             echo '<p class="description">' . __('Enter your Claude API key from Anthropic Console.', 'nexus-ai-wp-translator') . '</p>';
         }
-    }
-    
+    }    
     public function render_model_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $model = $settings['model'] ?? 'claude-sonnet-4-20250514';

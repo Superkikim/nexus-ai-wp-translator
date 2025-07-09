@@ -145,6 +145,10 @@
             
             // Emergency cleanup button
             $(document).on('click', '.nexus-emergency-cleanup', this.handleEmergencyCleanup.bind(this));
+        
+            // NEW: Monitor API key field changes
+            $(document).on('input paste keyup', '#claude_api_key', this.handleApiKeyChange.bind(this));
+
         },
 
         /**
@@ -171,22 +175,30 @@
             
             const $button = $(e.target);
             const $result = $('#api-test-result');
+            const $form = $button.closest('form');
             
-            // CRUCIAL: Récupérer la clé API depuis le champ
-            const apiKey = $('#claude_api_key').val();
+            // Récupérer la clé du champ
+            const apiKey = $('#claude_api_key').val().trim();
             
-            // Vérifier que la clé est présente
-            if (!apiKey || apiKey.trim() === '') {
+            if (!apiKey) {
                 this.showResult($result, 'error', 'Please enter your Claude API key first');
                 return;
             }
             
-            this.setButtonState($button, 'loading', 'Testing...');
+            this.setButtonState($button, 'loading', 'Saving & Testing...');
             $result.empty();
             
-            // Envoyer la clé API dans la requête
-            this.ajax('nexus_test_api_connection', {
-                api_key: apiKey  // <- AJOUTÉ !
+            // SOLUTION : Sauvegarder d'abord, puis tester
+            this.ajax('save_api_settings', {
+                api_key: apiKey,
+                // Autres champs du formulaire si nécessaire
+                model: $('#model').val(),
+                max_tokens: $('#max_tokens').val(),
+                temperature: $('#temperature').val()
+            })
+            .done(() => {
+                // Maintenant tester avec la clé sauvegardée
+                return this.ajax('nexus_test_api_connection', {});
             })
             .done((response) => {
                 if (response.success) {
@@ -201,8 +213,8 @@
             .always(() => {
                 this.setButtonState($button, 'normal', 'Test Connection');
             });
-        },
-        
+        },            
+
         /**
          * Handle form submission
          */
@@ -407,7 +419,25 @@
          */
         hasModule: function(name) {
             return !!this.config.modules[name];
-        }
+        },
+
+        // Handle API key field changes to update button label dynamically
+        handleApiKeyChange: function(e) {
+            const $field = $(e.target);
+            const $button = $('#test-api-connection');
+            const currentValue = $field.val().trim();
+            const originalValue = $field.data('original-value') || '';
+            
+            // Update button label based on comparison
+            if (currentValue !== originalValue) {
+                $button.text('Save & Test');
+            } else if (originalValue === '') {
+                $button.text('Save & Test');
+            } else {
+                $button.text('Test Connection');
+            }
+        },
+
     };
 
     // Expose core to global scope
