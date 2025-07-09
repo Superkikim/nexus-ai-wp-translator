@@ -225,22 +225,37 @@ class Translator_AJAX {
             wp_send_json_error(__('Insufficient permissions', 'nexus-ai-wp-translator'));
         }
         
-        // Test API connection
+        // Récupérer la clé API depuis AJAX (priorité) ou depuis les options
+        $api_key = null;
+        if (isset($_POST['api_key']) && !empty($_POST['api_key'])) {
+            $api_key = sanitize_text_field($_POST['api_key']);
+            error_log('DEBUG: Using API key from AJAX request');
+        } else {
+            // Fallback: récupérer depuis les options
+            $api_settings = get_option('nexus_translator_api_settings', array());
+            $api_key = $api_settings['claude_api_key'] ?? '';
+            error_log('DEBUG: Using API key from saved settings');
+        }
+        
+        if (empty($api_key)) {
+            wp_send_json_error(__('No API key provided', 'nexus-ai-wp-translator'));
+        }
+        
+        // Test API connection avec la clé fournie
         $api = new Translator_API();
-        $result = $api->test_api_connection();
+        $result = $api->test_api_key_direct($api_key);
         
         if ($result['success']) {
             wp_send_json_success(array(
                 'message' => $result['message'],
                 'test_translation' => $result['test_translation'],
-                'usage' => $result['usage'] ?? null,
-                'settings_used' => $result['settings_used'] ?? null
+                'model_used' => $result['model_used'] ?? 'claude-sonnet-4-20250514',
+                'usage' => $result['usage'] ?? null
             ));
         } else {
             wp_send_json_error($result['error']);
         }
-    }
-    
+    }    
     /**
      * Handle emergency stop toggle
      */

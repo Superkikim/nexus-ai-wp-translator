@@ -172,25 +172,37 @@
             const $button = $(e.target);
             const $result = $('#api-test-result');
             
+            // CRUCIAL: Récupérer la clé API depuis le champ
+            const apiKey = $('#claude_api_key').val();
+            
+            // Vérifier que la clé est présente
+            if (!apiKey || apiKey.trim() === '') {
+                this.showResult($result, 'error', 'Please enter your Claude API key first');
+                return;
+            }
+            
             this.setButtonState($button, 'loading', 'Testing...');
             $result.empty();
             
-            this.ajax('nexus_test_api_connection', {})
-                .done((response) => {
-                    if (response.success) {
-                        this.showResult($result, 'success', response.data.message, response.data.test_translation);
-                    } else {
-                        this.showResult($result, 'error', response.data);
-                    }
-                })
-                .fail(() => {
-                    this.showResult($result, 'error', 'Connection failed');
-                })
-                .always(() => {
-                    this.setButtonState($button, 'normal', 'Test Connection');
-                });
+            // Envoyer la clé API dans la requête
+            this.ajax('nexus_test_api_connection', {
+                api_key: apiKey  // <- AJOUTÉ !
+            })
+            .done((response) => {
+                if (response.success) {
+                    this.showResult($result, 'success', response.data.message, response.data.test_translation);
+                } else {
+                    this.showResult($result, 'error', response.data);
+                }
+            })
+            .fail(() => {
+                this.showResult($result, 'error', 'Connection failed');
+            })
+            .always(() => {
+                this.setButtonState($button, 'normal', 'Test Connection');
+            });
         },
-
+        
         /**
          * Handle form submission
          */
