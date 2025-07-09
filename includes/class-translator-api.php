@@ -872,16 +872,10 @@ class Translator_API {
  * Test direct de la clé API sans rate limiting
  */
     public function test_api_key_direct($api_key = null) {
-
-            // DEBUG: Vérifier ce qui se passe
-        error_log('DEBUG: api_key param = ' . ($api_key ? 'provided' : 'null'));
-        error_log('DEBUG: api_settings = ' . print_r($this->api_settings, true));
         
         // Utiliser la clé fournie ou celle configurée
         $test_key = $api_key ?: ($this->api_settings['claude_api_key'] ?? '');
-        
-        error_log('DEBUG: final test_key = ' . ($test_key ? 'found' : 'empty'));
-        
+                
         if (empty($test_key)) {
             return array(
                 'success' => false,
