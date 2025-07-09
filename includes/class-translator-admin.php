@@ -587,6 +587,18 @@ class Translator_Admin {
     
     // Sanitization methods
     public function sanitize_api_settings($input) {
+
+        error_log('DEBUG sanitize_api_settings: Input = ' . print_r($input, true));
+        
+        $sanitized = array();
+        
+        if (isset($input['claude_api_key'])) {
+            error_log('DEBUG: Raw API key length = ' . strlen($input['claude_api_key']));
+            $sanitized['claude_api_key'] = sanitize_text_field($input['claude_api_key']);
+            error_log('DEBUG: Sanitized API key length = ' . strlen($sanitized['claude_api_key']));
+        }
+
+
         $sanitized = array();
         
         if (isset($input['claude_api_key'])) {
@@ -633,6 +645,7 @@ class Translator_Admin {
             $sanitized['translation_cooldown'] = max(60, min(3600, (int) $input['translation_cooldown']));
         }
         
+        error_log('DEBUG: Final sanitized = ' . print_r($sanitized, true));
         return $sanitized;
     }
     
