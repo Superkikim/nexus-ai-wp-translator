@@ -406,7 +406,7 @@ class Nexus_Translator {
     }
     
     /**
-     * Enqueue admin scripts
+     * Enqueue admin scripts - UPDATED TO USE MODULAR SYSTEM
      */
     public function enqueue_admin_scripts($hook) {
         // Load on post edit screens AND settings page
@@ -414,6 +414,7 @@ class Nexus_Translator {
             return;
         }
         
+        // Enqueue CSS
         wp_enqueue_style(
             'nexus-translator-admin',
             NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/css/admin-style.css',
@@ -421,19 +422,29 @@ class Nexus_Translator {
             NEXUS_TRANSLATOR_VERSION
         );
         
+        // Enqueue MODULAR JavaScript system
         wp_enqueue_script(
-            'nexus-translator-admin',
-            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-script.js',
+            'nexus-translator-core',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-core.js',
             array('jquery'),
             NEXUS_TRANSLATOR_VERSION,
             true
         );
         
-        // Localize script
-        wp_localize_script('nexus-translator-admin', 'nexusTranslator', array(
+        wp_enqueue_script(
+            'nexus-translator-modules',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-modules.js',
+            array('nexus-translator-core'),
+            NEXUS_TRANSLATOR_VERSION,
+            true
+        );
+        
+        // Localize script for core
+        wp_localize_script('nexus-translator-core', 'nexusTranslator', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nexus_translator_nonce'),
             'settingsUrl' => admin_url('admin.php?page=nexus-translator-settings'),
+            'debug' => $this->is_debug_mode(),
             'strings' => array(
                 'translating' => __('Translating...', 'nexus-ai-wp-translator'),
                 'success' => __('Translation completed successfully!', 'nexus-ai-wp-translator'),
@@ -441,9 +452,18 @@ class Nexus_Translator {
                 'confirmTranslate' => __('Are you sure you want to translate this post?', 'nexus-ai-wp-translator'),
                 'selectLanguages' => __('Please select at least one target language.', 'nexus-ai-wp-translator'),
                 'translateNow' => __('Translate Now', 'nexus-ai-wp-translator'),
-                'testing' => __('Testing...', 'nexus-ai-wp-translator')
+                'testing' => __('Testing...', 'nexus-ai-wp-translator'),
+                'processing' => __('Processing...', 'nexus-ai-wp-translator')
             )
         ));
+    }
+    
+    /**
+     * Check if debug mode is enabled
+     */
+    private function is_debug_mode() {
+        $options = get_option('nexus_translator_options', array());
+        return !empty($options['debug_mode']);
     }
     
     /**

@@ -3,7 +3,7 @@
  * File: class-translator-admin.php
  * Location: /includes/class-translator-admin.php
  * 
- * Translator Admin Class - Complete with Enhanced Features
+ * Translator Admin Class - Modular Architecture
  */
 
 if (!defined('ABSPATH')) {
@@ -31,6 +31,9 @@ class Translator_Admin {
         add_action('wp_ajax_nexus_get_analytics', array($this, 'handle_get_analytics'));
         add_action('wp_ajax_nexus_export_config', array($this, 'handle_export_config'));
         add_action('wp_ajax_nexus_import_config', array($this, 'handle_import_config'));
+        add_action('wp_ajax_nexus_validate_config', array($this, 'handle_validate_config'));
+        add_action('wp_ajax_nexus_cleanup_locks', array($this, 'handle_cleanup_locks'));
+        add_action('wp_ajax_nexus_emergency_cleanup', array($this, 'handle_emergency_cleanup'));
         
         add_action('wp_dashboard_setup', array($this, 'add_dashboard_widget'));
     }
@@ -294,11 +297,13 @@ class Translator_Admin {
         $api = new Translator_API();
         $config_summary = $api->get_configuration_summary();
         $rate_status = $api->get_rate_limit_status();
+        $validation = $api->validate_configuration();
         
         ?>
         <div class="nexus-advanced-settings">
             <h2><?php _e('Advanced Settings & Management', 'nexus-ai-wp-translator'); ?></h2>
             
+            <!-- Current Status Overview -->
             <div class="nexus-status-overview">
                 <h3><?php _e('System Status', 'nexus-ai-wp-translator'); ?></h3>
                 <div class="nexus-status-grid">
@@ -321,24 +326,62 @@ class Translator_Admin {
                             (<?php echo $rate_status['percentages']['day']; ?>%)
                         </span>
                     </div>
+                    <div class="nexus-status-item">
+                        <span class="nexus-status-label"><?php _e('Model:', 'nexus-ai-wp-translator'); ?></span>
+                        <span class="nexus-status-value"><?php echo esc_html($config_summary['model']); ?></span>
+                    </div>
                 </div>
             </div>
             
+            <!-- Configuration Validation -->
+            <?php if (!$validation['valid']): ?>
+            <div class="nexus-validation-warnings">
+                <h3><?php _e('⚠️ Configuration Issues', 'nexus-ai-wp-translator'); ?></h3>
+                <ul>
+                    <?php foreach ($validation['issues'] as $issue): ?>
+                        <li><?php echo esc_html($issue); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+            <?php endif; ?>
+            
+            <!-- Emergency Controls -->
             <div class="nexus-emergency-controls">
                 <h3><?php _e('Emergency Controls', 'nexus-ai-wp-translator'); ?></h3>
                 <div class="nexus-control-buttons">
                     <button type="button" id="reset-all-limits" class="button"><?php _e('Reset All Rate Limits', 'nexus-ai-wp-translator'); ?></button>
                     <button type="button" id="test-api-advanced" class="button"><?php _e('Test API Connection', 'nexus-ai-wp-translator'); ?></button>
-                    <button type="button" id="export-config" class="button"><?php _e('Export Configuration', 'nexus-ai-wp-translator'); ?></button>
+                    <button type="button" id="validate-config" class="button"><?php _e('Validate Configuration', 'nexus-ai-wp-translator'); ?></button>
+                    <button type="button" id="cleanup-locks" class="button button-secondary"><?php _e('Cleanup Translation Locks', 'nexus-ai-wp-translator'); ?></button>
+                    <button type="button" id="emergency-cleanup" class="button button-danger"><?php _e('Emergency Cleanup', 'nexus-ai-wp-translator'); ?></button>
                 </div>
                 <div id="nexus-emergency-result"></div>
             </div>
             
-            <div class="nexus-config-import">
-                <h3><?php _e('Import Configuration', 'nexus-ai-wp-translator'); ?></h3>
-                <input type="file" id="config-file" accept=".json" />
-                <button type="button" id="import-config" class="button" disabled><?php _e('Import Configuration', 'nexus-ai-wp-translator'); ?></button>
+            <!-- Configuration Management -->
+            <div class="nexus-config-management">
+                <h3><?php _e('Configuration Management', 'nexus-ai-wp-translator'); ?></h3>
+                <div class="nexus-config-controls">
+                    <div class="nexus-config-export">
+                        <h4><?php _e('Export Configuration', 'nexus-ai-wp-translator'); ?></h4>
+                        <p><?php _e('Export your current settings for backup or migration.', 'nexus-ai-wp-translator'); ?></p>
+                        <button type="button" id="export-config" class="button"><?php _e('Export Configuration', 'nexus-ai-wp-translator'); ?></button>
+                    </div>
+                    
+                    <div class="nexus-config-import">
+                        <h4><?php _e('Import Configuration', 'nexus-ai-wp-translator'); ?></h4>
+                        <p><?php _e('Import previously exported settings.', 'nexus-ai-wp-translator'); ?></p>
+                        <input type="file" id="config-file" accept=".json" />
+                        <button type="button" id="import-config" class="button" disabled><?php _e('Import Configuration', 'nexus-ai-wp-translator'); ?></button>
+                    </div>
+                </div>
                 <div id="nexus-config-result"></div>
+            </div>
+            
+            <!-- Current Configuration Display -->
+            <div class="nexus-config-display">
+                <h3><?php _e('Current Configuration', 'nexus-ai-wp-translator'); ?></h3>
+                <textarea readonly class="widefat" rows="15"><?php echo esc_textarea(json_encode($config_summary, JSON_PRETTY_PRINT)); ?></textarea>
             </div>
         </div>
         <?php
@@ -697,6 +740,11 @@ class Translator_Admin {
             'site_url' => get_site_url()
         );
         
+        // Remove sensitive data
+        if (isset($config['api_settings']['claude_api_key'])) {
+            $config['api_settings']['claude_api_key'] = '[API_KEY_REMOVED]';
+        }
+        
         wp_send_json_success(array(
             'config' => $config,
             'filename' => 'nexus-translator-config-' . date('Y-m-d-H-i-s') . '.json'
@@ -719,24 +767,206 @@ class Translator_Admin {
         }
         
         $imported = 0;
+        $warnings = array();
         
+        // Import API settings (excluding API key for security)
         if (isset($config_data['api_settings']) && is_array($config_data['api_settings'])) {
-            update_option('nexus_translator_api_settings', $config_data['api_settings']);
-            $imported++;
+            $api_settings = $config_data['api_settings'];
+            
+            // Remove API key if present (security)
+            unset($api_settings['claude_api_key']);
+            
+            $current_api_settings = get_option('nexus_translator_api_settings', array());
+            $new_api_settings = array_merge($current_api_settings, $api_settings);
+            
+            if (update_option('nexus_translator_api_settings', $new_api_settings)) {
+                $imported++;
+            } else {
+                $warnings[] = 'Failed to import API settings';
+            }
         }
         
+        // Import language settings
         if (isset($config_data['language_settings']) && is_array($config_data['language_settings'])) {
-            update_option('nexus_translator_language_settings', $config_data['language_settings']);
-            $imported++;
+            $language_settings = $config_data['language_settings'];
+            
+            // Validate language codes
+            $valid_languages = array_keys($this->language_manager->get_supported_languages());
+            
+            if (isset($language_settings['source_language'])) {
+                if (!in_array($language_settings['source_language'], $valid_languages)) {
+                    unset($language_settings['source_language']);
+                    $warnings[] = 'Invalid source language removed';
+                }
+            }
+            
+            if (isset($language_settings['target_languages']) && is_array($language_settings['target_languages'])) {
+                $language_settings['target_languages'] = array_filter(
+                    $language_settings['target_languages'],
+                    function($lang) use ($valid_languages) {
+                        return in_array($lang, $valid_languages);
+                    }
+                );
+            }
+            
+            if (update_option('nexus_translator_language_settings', $language_settings)) {
+                $imported++;
+            } else {
+                $warnings[] = 'Failed to import language settings';
+            }
         }
         
+        // Import general options
         if (isset($config_data['general_options']) && is_array($config_data['general_options'])) {
-            update_option('nexus_translator_options', $config_data['general_options']);
-            $imported++;
+            if (update_option('nexus_translator_options', $config_data['general_options'])) {
+                $imported++;
+            } else {
+                $warnings[] = 'Failed to import general options';
+            }
+        }
+        
+        $message = sprintf(
+            __('%d settings sections imported successfully', 'nexus-ai-wp-translator'),
+            $imported
+        );
+        
+        if (!empty($warnings)) {
+            $message .= '. ' . __('Warnings: ', 'nexus-ai-wp-translator') . implode(', ', $warnings);
         }
         
         wp_send_json_success(array(
-            'message' => sprintf(__('Configuration imported successfully! %d sections updated.', 'nexus-ai-wp-translator'), $imported)
+            'message' => $message,
+            'imported_count' => $imported,
+            'warnings' => $warnings
+        ));
+    }
+    
+    public function handle_validate_config() {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
+            wp_send_json_error('Access denied');
+        }
+        
+        if (!class_exists('Translator_API')) {
+            wp_send_json_error('API class not available');
+        }
+        
+        $api = new Translator_API();
+        $validation = $api->validate_configuration();
+        
+        // Additional validation checks
+        $issues = $validation['issues'];
+        $warnings = array();
+        
+        // Check if API is actually configured
+        if (!$api->is_api_configured()) {
+            $issues[] = __('Claude API key is not configured', 'nexus-ai-wp-translator');
+        }
+        
+        // Check language settings
+        $lang_settings = get_option('nexus_translator_language_settings', array());
+        if (empty($lang_settings['source_language'])) {
+            $issues[] = __('Source language is not configured', 'nexus-ai-wp-translator');
+        }
+        if (empty($lang_settings['target_languages'])) {
+            $issues[] = __('No target languages selected', 'nexus-ai-wp-translator');
+        }
+        
+        // Check emergency status
+        if (get_option('nexus_translator_emergency_stop', false)) {
+            $issues[] = __('Emergency stop is currently active', 'nexus-ai-wp-translator');
+        }
+        
+        // Test API connection if possible
+        $api_status = 'unknown';
+        if ($api->is_api_configured()) {
+            $test_result = $api->test_api_connection();
+            $api_status = $test_result['success'] ? 'connected' : 'error';
+            
+            if (!$test_result['success']) {
+                $issues[] = sprintf(__('API connection failed: %s', 'nexus-ai-wp-translator'), $test_result['error']);
+            }
+        }
+        
+        wp_send_json_success(array(
+            'valid' => empty($issues),
+            'issues' => $issues,
+            'warnings' => $warnings,
+            'api_status' => $api_status
+        ));
+    }
+    
+    public function handle_cleanup_locks() {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
+            wp_send_json_error('Access denied');
+        }
+        
+        global $wpdb;
+        
+        // Remove locks older than 1 hour
+        $cutoff = time() - 3600;
+        
+        $deleted = $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->postmeta} 
+             WHERE meta_key = '_nexus_translation_lock' 
+             AND meta_value < %d",
+            $cutoff
+        ));
+        
+        // Reset stale processing status
+        $wpdb->query(
+            "UPDATE {$wpdb->postmeta} 
+             SET meta_value = 'error' 
+             WHERE meta_key = '_nexus_translation_status' 
+             AND meta_value = 'processing'"
+        );
+        
+        wp_send_json_success(array(
+            'message' => sprintf(__('Cleaned up %d stale translation locks', 'nexus-ai-wp-translator'), $deleted)
+        ));
+    }
+    
+    public function handle_emergency_cleanup() {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
+            wp_send_json_error('Access denied');
+        }
+        
+        global $wpdb;
+        
+        $cleaned = array();
+        
+        // Clear all locks
+        $locks_deleted = $wpdb->query(
+            "DELETE FROM {$wpdb->postmeta} WHERE meta_key = '_nexus_translation_lock'"
+        );
+        $cleaned[] = sprintf(__('%d translation locks removed', 'nexus-ai-wp-translator'), $locks_deleted);
+        
+        // Reset processing translations to error
+        $processing_reset = $wpdb->query(
+            "UPDATE {$wpdb->postmeta} 
+             SET meta_value = 'error' 
+             WHERE meta_key = '_nexus_translation_status' 
+             AND meta_value = 'processing'"
+        );
+        $cleaned[] = sprintf(__('%d stuck translations reset', 'nexus-ai-wp-translator'), $processing_reset);
+        
+        // Clear rate limits
+        delete_transient('nexus_translator_rate_limit_hour');
+        delete_transient('nexus_translator_rate_limit_day');
+        delete_transient('nexus_translator_last_request');
+        $cleaned[] = __('Rate limits reset', 'nexus-ai-wp-translator');
+        
+        // Clear emergency stop
+        delete_option('nexus_translator_emergency_stop');
+        delete_option('nexus_translator_emergency_reason');
+        delete_option('nexus_translator_emergency_time');
+        $cleaned[] = __('Emergency stop cleared', 'nexus-ai-wp-translator');
+        
+        // Clear any cached errors
+        wp_cache_flush();
+        
+        wp_send_json_success(array(
+            'message' => __('Emergency cleanup completed', 'nexus-ai-wp-translator'),
+            'actions' => $cleaned
         ));
     }
     
@@ -968,15 +1198,24 @@ class Translator_Admin {
             return;
         }
         
+        // Enqueue modular JavaScript system
         wp_enqueue_script(
-            'nexus-translator-admin',
-            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-script.js',
+            'nexus-translator-admin-core',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-core.js',
             array('jquery'),
             NEXUS_TRANSLATOR_VERSION,
             true
         );
         
-        wp_localize_script('nexus-translator-admin', 'nexusTranslator', array(
+        wp_enqueue_script(
+            'nexus-translator-admin-modules',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-modules.js',
+            array('nexus-translator-admin-core'),
+            NEXUS_TRANSLATOR_VERSION,
+            true
+        );
+        
+        wp_localize_script('nexus-translator-admin-core', 'nexusTranslator', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('nexus_translator_nonce'),
             'strings' => array(
@@ -984,9 +1223,21 @@ class Translator_Admin {
                 'success' => __('Success!', 'nexus-ai-wp-translator'),
                 'error' => __('Error occurred', 'nexus-ai-wp-translator'),
                 'confirmReset' => __('Are you sure you want to reset rate limits?', 'nexus-ai-wp-translator'),
-                'confirmEmergency' => __('Are you sure you want to reset emergency stop?', 'nexus-ai-wp-translator')
-            )
+                'confirmEmergency' => __('Are you sure you want to reset emergency stop?', 'nexus-ai-wp-translator'),
+                'confirmCleanup' => __('Are you sure you want to perform emergency cleanup?', 'nexus-ai-wp-translator'),
+                'testing' => __('Testing...', 'nexus-ai-wp-translator'),
+                'validating' => __('Validating...', 'nexus-ai-wp-translator'),
+                'cleaning' => __('Cleaning...', 'nexus-ai-wp-translator')
+            ),
+            'debug' => get_option('nexus_translator_options', array())['debug_mode'] ?? false
         ));
+        
+        wp_enqueue_style(
+            'nexus-translator-admin',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/css/admin-style.css',
+            array(),
+            NEXUS_TRANSLATOR_VERSION
+        );
     }
     
     private function add_analytics_styles() {
@@ -1037,22 +1288,28 @@ class Translator_Admin {
         <style>
         .nexus-advanced-settings { max-width: 1200px; }
         .nexus-status-overview,
+        .nexus-validation-warnings,
         .nexus-emergency-controls,
-        .nexus-config-import {
+        .nexus-config-management,
+        .nexus-config-display {
             background: white;
             border: 1px solid #ddd;
             border-radius: 8px;
             padding: 20px;
             margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         .nexus-status-overview h3,
+        .nexus-validation-warnings h3,
         .nexus-emergency-controls h3,
-        .nexus-config-import h3 {
+        .nexus-config-management h3,
+        .nexus-config-display h3 {
             margin-top: 0;
             margin-bottom: 20px;
             color: #333;
             border-bottom: 2px solid #0073aa;
             padding-bottom: 10px;
+            font-size: 18px;
         }
         .nexus-status-grid {
             display: grid;
@@ -1081,15 +1338,69 @@ class Translator_Admin {
         .nexus-status-value.error {
             color: #dc3232;
         }
+        .nexus-validation-warnings {
+            background: #fff8e1;
+            border-color: #ffb900;
+        }
+        .nexus-validation-warnings h3 {
+            color: #e65100;
+            border-bottom-color: #ffb900;
+        }
         .nexus-emergency-controls {
             background: #fff8e1;
             border-color: #ffb900;
+        }
+        .nexus-emergency-controls h3 {
+            color: #e65100;
+            border-bottom-color: #ffb900;
         }
         .nexus-control-buttons {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
             margin-bottom: 15px;
+        }
+        .nexus-config-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .nexus-config-export,
+        .nexus-config-import {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #dee2e6;
+        }
+        .nexus-config-export h4,
+        .nexus-config-import h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #555;
+            font-size: 16px;
+        }
+        .nexus-config-export p,
+        .nexus-config-import p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .nexus-config-display textarea {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        @media (max-width: 768px) {
+            .nexus-config-controls {
+                grid-template-columns: 1fr;
+            }
+            .nexus-control-buttons {
+                flex-direction: column;
+            }
         }
         </style>
         <?php

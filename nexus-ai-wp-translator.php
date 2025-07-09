@@ -139,7 +139,7 @@ final class Nexus_AI_WP_Translator {
     }
     
     /**
-     * Load plugin includes
+     * Load plugin includes - CLEANED UP VERSION
      */
     private function load_includes() {
         // Core classes - Load in order of dependency
@@ -164,8 +164,8 @@ final class Nexus_AI_WP_Translator {
         if (is_admin()) {
             $admin_classes = array(
                 'class-translator-admin.php',
-                'class-translator-ajax.php',
-                'class-translator-ajax-enhanced.php'  // Enhanced AJAX handler
+                'class-translator-ajax.php'
+                // REMOVED: class-translator-ajax-enhanced.php (does not exist)
             );
             
             foreach ($admin_classes as $class_file) {
@@ -180,7 +180,7 @@ final class Nexus_AI_WP_Translator {
     }
     
     /**
-     * Initialize components
+     * Initialize components - CLEANED UP VERSION
      */
     private function init_components() {
         try {
@@ -199,10 +199,7 @@ final class Nexus_AI_WP_Translator {
                     $this->components['ajax'] = new Translator_AJAX();
                 }
                 
-                // Initialize enhanced AJAX handler
-                if (class_exists('Translator_AJAX_Enhanced')) {
-                    $this->components['ajax_enhanced'] = new Translator_AJAX_Enhanced();
-                }
+                // REMOVED: Enhanced AJAX handler (does not exist)
             }
             
             // Log component initialization
