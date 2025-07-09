@@ -595,41 +595,7 @@ class Translator_API {
      * PROTECTED test API connection
      */
     public function test_api_connection() {
-        // Emergency stop check
-        if ($this->is_emergency_stop_active()) {
-            return $this->error_response(__('API testing disabled (Emergency Stop active)', 'nexus-ai-wp-translator'));
-        }
-        
-        if (!$this->is_api_configured()) {
-            return $this->error_response(__('API key not configured', 'nexus-ai-wp-translator'));
-        }
-        
-        // Check rate limits for test
-        $rate_check = $this->check_rate_limits();
-        if (!$rate_check['success']) {
-            return $rate_check;
-        }
-        
-        // Simple test translation
-        $test_content = "TITLE: Hello World\n\nCONTENT:\nThis is a test message to verify the API connection.";
-        $result = $this->translate_content($test_content, 'en', 'fr', 'post');
-        
-        if ($result['success']) {
-            return array(
-                'success' => true,
-                'message' => __('API connection successful', 'nexus-ai-wp-translator'),
-                'test_translation' => $result['translated_content'],
-                'usage' => $result['usage'] ?? null,
-                'settings_used' => array(
-                    'model' => $this->get_model(),
-                    'max_tokens' => $this->get_max_tokens(),
-                    'temperature' => $this->get_temperature(),
-                    'timeout' => $this->get_request_timeout()
-                )
-            );
-        }
-        
-        return $result;
+        return $this->test_api_key_direct();
     }
     
     /**
@@ -897,5 +863,139 @@ class Translator_API {
         error_log('Nexus Translator: Configuration imported successfully');
         
         return true;
+    }
+
+    
+
+
+/**
+ * Test direct de la clé API sans rate limiting
+ */
+    public function test_api_key_direct($api_key = null) {
+        // Utiliser la clé fournie ou celle configurée
+        $test_key = $api_key ?: ($this->api_settings['claude_api_key'] ?? '');
+        
+        if (empty($test_key)) {
+            return array(
+                'success' => false,
+                'error' => __('No API key provided', 'nexus-ai-wp-translator')
+            );
+        }
+        
+        // Test minimal direct sans checks
+        $test_data = array(
+            'model' => 'claude-sonnet-4-20250514',
+            'max_tokens' => 100,
+            'temperature' => 0.1,
+            'messages' => array(
+                array(
+                    'role' => 'user',
+                    'content' => 'Translate this to French: "Hello, this is a test."'
+                )
+            )
+        );
+        
+        $headers = array(
+            'Content-Type' => 'application/json',
+            'x-api-key' => $test_key,
+            'anthropic-version' => '2023-06-01',
+            'User-Agent' => 'Nexus-Translator-Test/1.0.0'
+        );
+        
+        $args = array(
+            'method' => 'POST',
+            'headers' => $headers,
+            'body' => json_encode($test_data),
+            'timeout' => 30,
+            'sslverify' => true
+        );
+        
+        // Log de debug
+        if ($this->is_debug_mode()) {
+            error_log('Nexus Test API: Testing key ending in ...' . substr($test_key, -4));
+        }
+        
+        $response = wp_remote_request(self::API_ENDPOINT, $args);
+        
+        // Analyse de la réponse
+        if (is_wp_error($response)) {
+            $error_message = $response->get_error_message();
+            error_log("Nexus Test API: WordPress HTTP Error: $error_message");
+            return array(
+                'success' => false,
+                'error' => "Connection error: $error_message"
+            );
+        }
+        
+        $response_code = wp_remote_retrieve_response_code($response);
+        $response_body = wp_remote_retrieve_body($response);
+        
+        error_log("Nexus Test API: Response code: $response_code");
+        
+        if ($response_code !== 200) {
+            error_log("Nexus Test API: Error response: $response_body");
+            
+            $error_data = json_decode($response_body, true);
+            $error_message = 'API Error';
+            
+            if (isset($error_data['error']['message'])) {
+                $error_message = $error_data['error']['message'];
+            }
+            
+            // Messages d'erreur spécifiques
+            switch ($response_code) {
+                case 401:
+                    $error_message = 'Invalid API key - please check your key from Anthropic Console';
+                    break;
+                case 403:
+                    $error_message = 'API key doesn\'t have permission - check your Anthropic account';
+                    break;
+                case 429:
+                    $error_message = 'Rate limit exceeded - wait a moment and try again';
+                    break;
+                case 500:
+                    $error_message = 'Claude API server error - try again later';
+                    break;
+            }
+            
+            return array(
+                'success' => false,
+                'error' => $error_message,
+                'response_code' => $response_code,
+                'raw_response' => $response_body
+            );
+        }
+        
+        // Parse successful response
+        $data = json_decode($response_body, true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return array(
+                'success' => false,
+                'error' => 'Invalid JSON response from API'
+            );
+        }
+        
+        if (!isset($data['content'][0]['text'])) {
+            return array(
+                'success' => false,
+                'error' => 'Unexpected API response structure'
+            );
+        }
+        
+        return array(
+            'success' => true,
+            'message' => 'API connection successful!',
+            'test_translation' => $data['content'][0]['text'],
+            'model_used' => $data['model'] ?? 'claude-sonnet-4-20250514',
+            'usage' => $data['usage'] ?? null
+        );
+    }
+
+    /**
+     * Mise à jour de test_api_connection pour utiliser la nouvelle méthode
+     */
+    public function test_api_connection() {
+        return $this->test_api_key_direct();
     }
 }
