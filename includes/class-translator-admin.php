@@ -3,9 +3,7 @@
  * File: class-translator-admin.php
  * Location: /includes/class-translator-admin.php
  * 
- * Translator Admin Class - With Configurable API Limits
- * 
- * Handles admin interface and settings with API rate limiting configuration
+ * Translator Admin Class - Complete with Enhanced Features
  */
 
 if (!defined('ABSPATH')) {
@@ -14,40 +12,29 @@ if (!defined('ABSPATH')) {
 
 class Translator_Admin {
     
-    /**
-     * Language manager instance
-     */
     private $language_manager;
     
-    /**
-     * Constructor
-     */
     public function __construct() {
         $this->language_manager = new Language_Manager();
         $this->init_hooks();
     }
     
-    /**
-     * Initialize hooks
-     */
     private function init_hooks() {
-        // Admin menu
         add_action('admin_menu', array($this, 'add_admin_menu'));
-        
-        // Settings registration
         add_action('admin_init', array($this, 'register_settings'));
-        
-        // Admin notices
         add_action('admin_notices', array($this, 'admin_notices'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_scripts'));
         
-        // AJAX handlers for admin
+        // AJAX handlers
         add_action('wp_ajax_nexus_reset_rate_limits', array($this, 'handle_reset_rate_limits'));
         add_action('wp_ajax_nexus_reset_emergency', array($this, 'handle_reset_emergency'));
+        add_action('wp_ajax_nexus_get_analytics', array($this, 'handle_get_analytics'));
+        add_action('wp_ajax_nexus_export_config', array($this, 'handle_export_config'));
+        add_action('wp_ajax_nexus_import_config', array($this, 'handle_import_config'));
+        
+        add_action('wp_dashboard_setup', array($this, 'add_dashboard_widget'));
     }
     
-    /**
-     * Add admin menu
-     */
     public function add_admin_menu() {
         add_options_page(
             __('Nexus AI Translator Settings', 'nexus-ai-wp-translator'),
@@ -58,11 +45,8 @@ class Translator_Admin {
         );
     }
     
-    /**
-     * Register settings
-     */
     public function register_settings() {
-        // API Settings Section
+        // API Settings
         add_settings_section(
             'nexus_translator_api_section',
             __('Claude AI API Settings', 'nexus-ai-wp-translator'),
@@ -74,39 +58,24 @@ class Translator_Admin {
             'sanitize_callback' => array($this, 'sanitize_api_settings')
         ));
         
-        add_settings_field(
-            'claude_api_key',
-            __('Claude API Key', 'nexus-ai-wp-translator'),
-            array($this, 'render_api_key_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_api_section'
+        $api_fields = array(
+            'claude_api_key' => __('Claude API Key', 'nexus-ai-wp-translator'),
+            'model' => __('Claude Model', 'nexus-ai-wp-translator'),
+            'max_tokens' => __('Max Tokens', 'nexus-ai-wp-translator'),
+            'temperature' => __('Temperature', 'nexus-ai-wp-translator')
         );
         
-        add_settings_field(
-            'model',
-            __('Claude Model', 'nexus-ai-wp-translator'),
-            array($this, 'render_model_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_api_section'
-        );
+        foreach ($api_fields as $field => $label) {
+            add_settings_field(
+                $field,
+                $label,
+                array($this, "render_{$field}_field"),
+                'nexus_translator_api_settings',
+                'nexus_translator_api_section'
+            );
+        }
         
-        add_settings_field(
-            'max_tokens',
-            __('Max Tokens', 'nexus-ai-wp-translator'),
-            array($this, 'render_max_tokens_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_api_section'
-        );
-        
-        add_settings_field(
-            'temperature',
-            __('Temperature', 'nexus-ai-wp-translator'),
-            array($this, 'render_temperature_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_api_section'
-        );
-        
-        // API Rate Limiting Section
+        // Rate Limiting Section
         add_settings_section(
             'nexus_translator_rate_limiting_section',
             __('API Rate Limiting & Safety', 'nexus-ai-wp-translator'),
@@ -114,55 +83,26 @@ class Translator_Admin {
             'nexus_translator_api_settings'
         );
         
-        add_settings_field(
-            'max_calls_per_hour',
-            __('Max API Calls per Hour', 'nexus-ai-wp-translator'),
-            array($this, 'render_max_calls_hour_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_rate_limiting_section'
+        $rate_fields = array(
+            'max_calls_per_hour' => __('Max API Calls per Hour', 'nexus-ai-wp-translator'),
+            'max_calls_per_day' => __('Max API Calls per Day', 'nexus-ai-wp-translator'),
+            'min_request_interval' => __('Minimum Interval Between Requests', 'nexus-ai-wp-translator'),
+            'request_timeout' => __('Request Timeout', 'nexus-ai-wp-translator'),
+            'emergency_stop_threshold' => __('Emergency Stop Threshold', 'nexus-ai-wp-translator'),
+            'translation_cooldown' => __('Translation Cooldown', 'nexus-ai-wp-translator')
         );
         
-        add_settings_field(
-            'max_calls_per_day',
-            __('Max API Calls per Day', 'nexus-ai-wp-translator'),
-            array($this, 'render_max_calls_day_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_rate_limiting_section'
-        );
+        foreach ($rate_fields as $field => $label) {
+            add_settings_field(
+                $field,
+                $label,
+                array($this, "render_{$field}_field"),
+                'nexus_translator_api_settings',
+                'nexus_translator_rate_limiting_section'
+            );
+        }
         
-        add_settings_field(
-            'min_request_interval',
-            __('Minimum Interval Between Requests', 'nexus-ai-wp-translator'),
-            array($this, 'render_min_interval_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_rate_limiting_section'
-        );
-        
-        add_settings_field(
-            'request_timeout',
-            __('Request Timeout', 'nexus-ai-wp-translator'),
-            array($this, 'render_timeout_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_rate_limiting_section'
-        );
-        
-        add_settings_field(
-            'emergency_stop_threshold',
-            __('Emergency Stop Threshold', 'nexus-ai-wp-translator'),
-            array($this, 'render_emergency_threshold_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_rate_limiting_section'
-        );
-        
-        add_settings_field(
-            'translation_cooldown',
-            __('Translation Cooldown', 'nexus-ai-wp-translator'),
-            array($this, 'render_cooldown_field'),
-            'nexus_translator_api_settings',
-            'nexus_translator_rate_limiting_section'
-        );
-        
-        // Language Settings Section
+        // Language Settings
         add_settings_section(
             'nexus_translator_language_section',
             __('Language Settings', 'nexus-ai-wp-translator'),
@@ -174,23 +114,12 @@ class Translator_Admin {
             'sanitize_callback' => array($this, 'sanitize_language_settings')
         ));
         
-        add_settings_field(
-            'source_language',
-            __('Source Language', 'nexus-ai-wp-translator'),
-            array($this, 'render_source_language_field'),
-            'nexus_translator_language_settings',
-            'nexus_translator_language_section'
-        );
+        add_settings_field('source_language', __('Source Language', 'nexus-ai-wp-translator'), 
+            array($this, 'render_source_language_field'), 'nexus_translator_language_settings', 'nexus_translator_language_section');
+        add_settings_field('target_languages', __('Target Languages', 'nexus-ai-wp-translator'), 
+            array($this, 'render_target_languages_field'), 'nexus_translator_language_settings', 'nexus_translator_language_section');
         
-        add_settings_field(
-            'target_languages',
-            __('Target Languages', 'nexus-ai-wp-translator'),
-            array($this, 'render_target_languages_field'),
-            'nexus_translator_language_settings',
-            'nexus_translator_language_section'
-        );
-        
-        // General Settings Section
+        // General Settings
         add_settings_section(
             'nexus_translator_general_section',
             __('General Settings', 'nexus-ai-wp-translator'),
@@ -202,126 +131,228 @@ class Translator_Admin {
             'sanitize_callback' => array($this, 'sanitize_general_settings')
         ));
         
-        add_settings_field(
-            'debug_mode',
-            __('Debug Mode', 'nexus-ai-wp-translator'),
-            array($this, 'render_debug_mode_field'),
-            'nexus_translator_general_settings',
-            'nexus_translator_general_section'
-        );
-        
-        add_settings_field(
-            'preserve_on_uninstall',
-            __('Preserve Data on Uninstall', 'nexus-ai-wp-translator'),
-            array($this, 'render_preserve_data_field'),
-            'nexus_translator_general_settings',
-            'nexus_translator_general_section'
-        );
+        add_settings_field('debug_mode', __('Debug Mode', 'nexus-ai-wp-translator'), 
+            array($this, 'render_debug_mode_field'), 'nexus_translator_general_settings', 'nexus_translator_general_section');
+        add_settings_field('preserve_on_uninstall', __('Preserve Data on Uninstall', 'nexus-ai-wp-translator'), 
+            array($this, 'render_preserve_data_field'), 'nexus_translator_general_settings', 'nexus_translator_general_section');
+        add_settings_field('analytics_retention', __('Analytics Data Retention', 'nexus-ai-wp-translator'), 
+            array($this, 'render_analytics_retention_field'), 'nexus_translator_general_settings', 'nexus_translator_general_section');
     }
     
-    /**
-     * Render settings page
-     */
     public function render_settings_page() {
-        if (isset($_GET['tab'])) {
-            $active_tab = sanitize_text_field($_GET['tab']);
-        } else {
-            $active_tab = 'api';
+        $active_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'api';
+        
+        ?>
+        <div class="wrap">
+            <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
+            
+            <?php if (isset($_GET['settings-updated']) && $_GET['settings-updated']): ?>
+                <div class="notice notice-success is-dismissible">
+                    <p><?php _e('Settings saved successfully!', 'nexus-ai-wp-translator'); ?></p>
+                </div>
+            <?php endif; ?>
+            
+            <nav class="nav-tab-wrapper">
+                <?php
+                $tabs = array(
+                    'api' => array('label' => __('API Settings', 'nexus-ai-wp-translator'), 'icon' => 'admin-network'),
+                    'languages' => array('label' => __('Languages', 'nexus-ai-wp-translator'), 'icon' => 'translation'),
+                    'general' => array('label' => __('General', 'nexus-ai-wp-translator'), 'icon' => 'admin-generic'),
+                    'analytics' => array('label' => __('Analytics', 'nexus-ai-wp-translator'), 'icon' => 'chart-bar'),
+                    'advanced' => array('label' => __('Advanced', 'nexus-ai-wp-translator'), 'icon' => 'admin-tools')
+                );
+                
+                foreach ($tabs as $tab_key => $tab_data):
+                    $active_class = $active_tab == $tab_key ? 'nav-tab-active' : '';
+                ?>
+                    <a href="?page=nexus-translator-settings&tab=<?php echo $tab_key; ?>" 
+                       class="nav-tab <?php echo $active_class; ?>">
+                        <span class="dashicons dashicons-<?php echo $tab_data['icon']; ?>" style="margin-right: 5px;"></span>
+                        <?php echo $tab_data['label']; ?>
+                    </a>
+                <?php endforeach; ?>
+            </nav>
+            
+            <div class="tab-content">
+                <?php
+                switch ($active_tab) {
+                    case 'api':
+                        $this->render_api_tab();
+                        break;
+                    case 'languages':
+                        $this->render_languages_tab();
+                        break;
+                    case 'general':
+                        $this->render_general_tab();
+                        break;
+                    case 'analytics':
+                        $this->render_analytics_tab();
+                        break;
+                    case 'advanced':
+                        $this->render_advanced_tab();
+                        break;
+                }
+                ?>
+            </div>
+        </div>
+        <?php
+    }
+    
+    private function render_api_tab() {
+        ?>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('nexus_translator_api_settings');
+            do_settings_sections('nexus_translator_api_settings');
+            submit_button();
+            ?>
+        </form>
+        
+        <div class="nexus-info-box">
+            <h3><?php _e('Getting Started with Claude AI', 'nexus-ai-wp-translator'); ?></h3>
+            <ol>
+                <li><?php _e('Sign up for an account at', 'nexus-ai-wp-translator'); ?> <a href="https://console.anthropic.com/" target="_blank">console.anthropic.com</a></li>
+                <li><?php _e('Generate an API key from your dashboard', 'nexus-ai-wp-translator'); ?></li>
+                <li><?php _e('Paste the API key above and test the connection', 'nexus-ai-wp-translator'); ?></li>
+                <li><?php _e('Configure your languages and start translating!', 'nexus-ai-wp-translator'); ?></li>
+            </ol>
+        </div>
+        <?php
+    }
+    
+    private function render_languages_tab() {
+        ?>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('nexus_translator_language_settings');
+            do_settings_sections('nexus_translator_language_settings');
+            submit_button();
+            ?>
+        </form>
+        <?php
+    }
+    
+    private function render_general_tab() {
+        ?>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('nexus_translator_options');
+            do_settings_sections('nexus_translator_general_settings');
+            submit_button();
+            ?>
+        </form>
+        <?php
+    }
+    
+    private function render_analytics_tab() {
+        $analytics = $this->get_analytics_data();
+        ?>
+        <div class="nexus-analytics-dashboard">
+            <h2><?php _e('Translation Analytics', 'nexus-ai-wp-translator'); ?></h2>
+            
+            <div class="nexus-analytics-summary">
+                <div class="nexus-summary-card">
+                    <h3><?php _e('Total Translations', 'nexus-ai-wp-translator'); ?></h3>
+                    <div class="nexus-summary-number"><?php echo number_format($analytics['totals']['requests']); ?></div>
+                    <div class="nexus-summary-subtitle"><?php _e('Last 30 days', 'nexus-ai-wp-translator'); ?></div>
+                </div>
+                <div class="nexus-summary-card">
+                    <h3><?php _e('Success Rate', 'nexus-ai-wp-translator'); ?></h3>
+                    <div class="nexus-summary-number">
+                        <?php echo $analytics['totals']['requests'] > 0 ? round(($analytics['totals']['successful'] / $analytics['totals']['requests']) * 100, 1) : 0; ?>%
+                    </div>
+                    <div class="nexus-summary-subtitle"><?php echo $analytics['totals']['successful']; ?> / <?php echo $analytics['totals']['requests']; ?></div>
+                </div>
+                <div class="nexus-summary-card">
+                    <h3><?php _e('Tokens Used', 'nexus-ai-wp-translator'); ?></h3>
+                    <div class="nexus-summary-number"><?php echo number_format($analytics['totals']['tokens']); ?></div>
+                    <div class="nexus-summary-subtitle"><?php _e('Total API tokens', 'nexus-ai-wp-translator'); ?></div>
+                </div>
+                <div class="nexus-summary-card">
+                    <h3><?php _e('Failed Translations', 'nexus-ai-wp-translator'); ?></h3>
+                    <div class="nexus-summary-number"><?php echo number_format($analytics['totals']['failed']); ?></div>
+                    <div class="nexus-summary-subtitle"><?php _e('Error rate', 'nexus-ai-wp-translator'); ?>: <?php echo $analytics['totals']['requests'] > 0 ? round(($analytics['totals']['failed'] / $analytics['totals']['requests']) * 100, 1) : 0; ?>%</div>
+                </div>
+            </div>
+            
+            <div class="nexus-analytics-controls">
+                <button type="button" id="refresh-analytics" class="button"><?php _e('Refresh Analytics', 'nexus-ai-wp-translator'); ?></button>
+                <button type="button" id="export-analytics" class="button"><?php _e('Export Data', 'nexus-ai-wp-translator'); ?></button>
+                <button type="button" id="clear-analytics" class="button button-secondary"><?php _e('Clear Analytics', 'nexus-ai-wp-translator'); ?></button>
+            </div>
+        </div>
+        <?php
+        $this->add_analytics_styles();
+    }
+    
+    private function render_advanced_tab() {
+        if (!class_exists('Translator_API')) {
+            echo '<p>' . __('Advanced features require API class.', 'nexus-ai-wp-translator') . '</p>';
+            return;
         }
         
-        include NEXUS_TRANSLATOR_ADMIN_DIR . 'views/admin-page.php';
-    }
-    
-    /**
-     * Render API section description
-     */
-    public function render_api_section_description() {
-        echo '<p>' . __('Configure your Claude AI API settings. You need a valid API key from Anthropic to use translation features.', 'nexus-ai-wp-translator') . '</p>';
-        echo '<p><a href="https://console.anthropic.com/" target="_blank">' . __('Get your API key from Anthropic Console', 'nexus-ai-wp-translator') . '</a></p>';
-    }
-    
-    /**
-     * Render rate limiting section description
-     */
-    public function render_rate_limiting_section_description() {
-        echo '<div class="nexus-rate-limiting-info">';
-        echo '<p>' . __('Configure API rate limiting and safety features to prevent infinite loops and excessive API usage.', 'nexus-ai-wp-translator') . '</p>';
+        $api = new Translator_API();
+        $config_summary = $api->get_configuration_summary();
+        $rate_status = $api->get_rate_limit_status();
         
-        // Show current usage if available
-        if (class_exists('Translator_API')) {
-            $api = new Translator_API();
-            $usage_stats = $api->get_usage_stats();
+        ?>
+        <div class="nexus-advanced-settings">
+            <h2><?php _e('Advanced Settings & Management', 'nexus-ai-wp-translator'); ?></h2>
             
-            echo '<div class="nexus-current-usage">';
-            echo '<h4>' . __('Current Usage', 'nexus-ai-wp-translator') . '</h4>';
-            echo '<div class="nexus-usage-grid">';
-            echo '<div class="nexus-usage-item">';
-            echo '<span class="nexus-usage-label">' . __('Calls Today:', 'nexus-ai-wp-translator') . '</span>';
-            echo '<span class="nexus-usage-value">' . $usage_stats['calls_today'] . ' / ' . $usage_stats['limit_day'] . '</span>';
-            echo '</div>';
-            echo '<div class="nexus-usage-item">';
-            echo '<span class="nexus-usage-label">' . __('Calls This Hour:', 'nexus-ai-wp-translator') . '</span>';
-            echo '<span class="nexus-usage-value">' . $usage_stats['calls_hour'] . ' / ' . $usage_stats['limit_hour'] . '</span>';
-            echo '</div>';
+            <div class="nexus-status-overview">
+                <h3><?php _e('System Status', 'nexus-ai-wp-translator'); ?></h3>
+                <div class="nexus-status-grid">
+                    <div class="nexus-status-item">
+                        <span class="nexus-status-label"><?php _e('API Status:', 'nexus-ai-wp-translator'); ?></span>
+                        <span class="nexus-status-value <?php echo $config_summary['api_configured'] ? 'success' : 'error'; ?>">
+                            <?php echo $config_summary['api_configured'] ? __('Connected', 'nexus-ai-wp-translator') : __('Not Configured', 'nexus-ai-wp-translator'); ?>
+                        </span>
+                    </div>
+                    <div class="nexus-status-item">
+                        <span class="nexus-status-label"><?php _e('Emergency Stop:', 'nexus-ai-wp-translator'); ?></span>
+                        <span class="nexus-status-value <?php echo $config_summary['safety']['emergency_stop'] ? 'error' : 'success'; ?>">
+                            <?php echo $config_summary['safety']['emergency_stop'] ? __('ACTIVE', 'nexus-ai-wp-translator') : __('Inactive', 'nexus-ai-wp-translator'); ?>
+                        </span>
+                    </div>
+                    <div class="nexus-status-item">
+                        <span class="nexus-status-label"><?php _e('Daily Usage:', 'nexus-ai-wp-translator'); ?></span>
+                        <span class="nexus-status-value">
+                            <?php echo $rate_status['day_calls']; ?> / <?php echo $rate_status['day_limit']; ?>
+                            (<?php echo $rate_status['percentages']['day']; ?>%)
+                        </span>
+                    </div>
+                </div>
+            </div>
             
-            if ($usage_stats['emergency_stop']) {
-                echo '<div class="nexus-usage-item nexus-emergency">';
-                echo '<span class="nexus-usage-label">' . __('Status:', 'nexus-ai-wp-translator') . '</span>';
-                echo '<span class="nexus-usage-value">🚨 ' . __('Emergency Stop Active', 'nexus-ai-wp-translator') . '</span>';
-                echo '</div>';
-            }
+            <div class="nexus-emergency-controls">
+                <h3><?php _e('Emergency Controls', 'nexus-ai-wp-translator'); ?></h3>
+                <div class="nexus-control-buttons">
+                    <button type="button" id="reset-all-limits" class="button"><?php _e('Reset All Rate Limits', 'nexus-ai-wp-translator'); ?></button>
+                    <button type="button" id="test-api-advanced" class="button"><?php _e('Test API Connection', 'nexus-ai-wp-translator'); ?></button>
+                    <button type="button" id="export-config" class="button"><?php _e('Export Configuration', 'nexus-ai-wp-translator'); ?></button>
+                </div>
+                <div id="nexus-emergency-result"></div>
+            </div>
             
-            echo '</div>';
-            
-            echo '<div class="nexus-admin-actions">';
-            echo '<button type="button" id="reset-rate-limits" class="button">' . __('Reset Rate Limits', 'nexus-ai-wp-translator') . '</button>';
-            if ($usage_stats['emergency_stop']) {
-                echo '<button type="button" id="reset-emergency-stop" class="button button-primary">' . __('Reset Emergency Stop', 'nexus-ai-wp-translator') . '</button>';
-            }
-            echo '</div>';
-            echo '</div>';
-        }
-        
-        echo '</div>';
-        
-        echo '<style>
-        .nexus-rate-limiting-info { background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; border-radius: 5px; margin: 10px 0; }
-        .nexus-current-usage { margin-top: 15px; }
-        .nexus-usage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; margin: 10px 0; }
-        .nexus-usage-item { display: flex; justify-content: space-between; padding: 8px 12px; background: white; border-radius: 3px; border-left: 3px solid #007cba; }
-        .nexus-usage-item.nexus-emergency { border-left-color: #dc3545; background: #ffe6e6; }
-        .nexus-usage-label { font-weight: 500; }
-        .nexus-usage-value { font-weight: bold; color: #007cba; }
-        .nexus-emergency .nexus-usage-value { color: #dc3545; }
-        .nexus-admin-actions { margin-top: 15px; }
-        .nexus-admin-actions button { margin-right: 10px; }
-        </style>';
+            <div class="nexus-config-import">
+                <h3><?php _e('Import Configuration', 'nexus-ai-wp-translator'); ?></h3>
+                <input type="file" id="config-file" accept=".json" />
+                <button type="button" id="import-config" class="button" disabled><?php _e('Import Configuration', 'nexus-ai-wp-translator'); ?></button>
+                <div id="nexus-config-result"></div>
+            </div>
+        </div>
+        <?php
+        $this->add_advanced_styles();
     }
     
-    /**
-     * Render language section description
-     */
-    public function render_language_section_description() {
-        echo '<p>' . __('Configure the source and target languages for translation.', 'nexus-ai-wp-translator') . '</p>';
-    }
-    
-    /**
-     * Render general section description
-     */
-    public function render_general_section_description() {
-        echo '<p>' . __('General plugin settings and behavior options.', 'nexus-ai-wp-translator') . '</p>';
-    }
-    
-    /**
-     * Render API key field
-     */
-    public function render_api_key_field() {
+    // Field Renderers
+    public function render_claude_api_key_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $api_key = $settings['claude_api_key'] ?? '';
         
         echo '<input type="password" id="claude_api_key" name="nexus_translator_api_settings[claude_api_key]" value="' . esc_attr($api_key) . '" class="regular-text" />';
         echo '<button type="button" id="test-api-connection" class="button" style="margin-left: 10px;">' . __('Test Connection', 'nexus-ai-wp-translator') . '</button>';
-        echo '<div id="api-test-result" style="margin-top: 10px;"></div>';
+        echo '<div id="api-test-result"></div>';
         
         if (!empty($api_key)) {
             echo '<p class="description">' . __('API key is configured. Click "Test Connection" to verify.', 'nexus-ai-wp-translator') . '</p>';
@@ -330,9 +361,6 @@ class Translator_Admin {
         }
     }
     
-    /**
-     * Render model field
-     */
     public function render_model_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $model = $settings['model'] ?? 'claude-sonnet-4-20250514';
@@ -350,66 +378,48 @@ class Translator_Admin {
         echo '<p class="description">' . __('Choose the Claude model to use for translations.', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render max tokens field
-     */
     public function render_max_tokens_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $max_tokens = $settings['max_tokens'] ?? 4000;
         
         echo '<input type="number" id="max_tokens" name="nexus_translator_api_settings[max_tokens]" value="' . esc_attr($max_tokens) . '" min="100" max="8000" step="100" />';
-        echo '<p class="description">' . __('Maximum number of tokens for API response (100-8000). Higher values allow longer translations but cost more.', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Maximum tokens for API response (100-8000).', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render temperature field
-     */
     public function render_temperature_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $temperature = $settings['temperature'] ?? 0.3;
         
         echo '<input type="number" id="temperature" name="nexus_translator_api_settings[temperature]" value="' . esc_attr($temperature) . '" min="0" max="1" step="0.1" />';
-        echo '<p class="description">' . __('Controls randomness in translations (0.0-1.0). Lower values = more consistent, higher = more creative. Recommended: 0.3', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Controls randomness (0.0-1.0). Recommended: 0.3', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render max calls per hour field
-     */
-    public function render_max_calls_hour_field() {
+    public function render_max_calls_per_hour_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $max_calls_hour = $settings['max_calls_per_hour'] ?? 50;
         
         echo '<input type="number" id="max_calls_per_hour" name="nexus_translator_api_settings[max_calls_per_hour]" value="' . esc_attr($max_calls_hour) . '" min="1" max="1000" />';
-        echo '<p class="description">' . __('Maximum API calls allowed per hour. Prevents accidental overuse. Default: 50', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Maximum API calls per hour. Default: 50', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render max calls per day field
-     */
-    public function render_max_calls_day_field() {
+    public function render_max_calls_per_day_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $max_calls_day = $settings['max_calls_per_day'] ?? 200;
         
         echo '<input type="number" id="max_calls_per_day" name="nexus_translator_api_settings[max_calls_per_day]" value="' . esc_attr($max_calls_day) . '" min="1" max="10000" />';
-        echo '<p class="description">' . __('Maximum API calls allowed per day. Important safety limit to prevent unexpected charges. Default: 200', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Maximum API calls per day. Default: 200', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render minimum interval field
-     */
-    public function render_min_interval_field() {
+    public function render_min_request_interval_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $min_interval = $settings['min_request_interval'] ?? 2;
         
         echo '<input type="number" id="min_request_interval" name="nexus_translator_api_settings[min_request_interval]" value="' . esc_attr($min_interval) . '" min="0" max="60" />';
         echo ' ' . __('seconds', 'nexus-ai-wp-translator');
-        echo '<p class="description">' . __('Minimum time between API requests. Prevents rapid-fire calls. Default: 2 seconds', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Minimum time between requests. Default: 2 seconds', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render timeout field
-     */
-    public function render_timeout_field() {
+    public function render_request_timeout_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $timeout = $settings['request_timeout'] ?? 60;
         
@@ -418,37 +428,27 @@ class Translator_Admin {
         echo '<p class="description">' . __('Maximum time to wait for API response. Default: 60 seconds', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render emergency threshold field
-     */
-    public function render_emergency_threshold_field() {
+    public function render_emergency_stop_threshold_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $threshold = $settings['emergency_stop_threshold'] ?? 10;
         
         echo '<input type="number" id="emergency_stop_threshold" name="nexus_translator_api_settings[emergency_stop_threshold]" value="' . esc_attr($threshold) . '" min="1" max="100" />';
         echo ' ' . __('calls', 'nexus-ai-wp-translator');
-        echo '<p class="description">' . __('Number of API calls in short time that triggers emergency stop. Prevents infinite loops. Default: 10', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Triggers emergency stop. Default: 10', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render cooldown field
-     */
-    public function render_cooldown_field() {
+    public function render_translation_cooldown_field() {
         $settings = get_option('nexus_translator_api_settings', array());
         $cooldown = $settings['translation_cooldown'] ?? 300;
         
         echo '<input type="number" id="translation_cooldown" name="nexus_translator_api_settings[translation_cooldown]" value="' . esc_attr($cooldown) . '" min="60" max="3600" />';
         echo ' ' . __('seconds', 'nexus-ai-wp-translator');
-        echo '<p class="description">' . __('Minimum time between translations of the same post. Prevents accidental re-translations. Default: 300 seconds (5 minutes)', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Minimum time between translations. Default: 300 seconds', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render source language field
-     */
     public function render_source_language_field() {
         $settings = get_option('nexus_translator_language_settings', array());
         $source_language = $settings['source_language'] ?? 'fr';
-        
         $languages = $this->language_manager->get_languages_for_select();
         
         echo '<select id="source_language" name="nexus_translator_language_settings[source_language]">';
@@ -459,53 +459,90 @@ class Translator_Admin {
         echo '<p class="description">' . __('The primary language of your content.', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render target languages field
-     */
     public function render_target_languages_field() {
         $settings = get_option('nexus_translator_language_settings', array());
         $target_languages = $settings['target_languages'] ?? array('en');
-        
         $languages = $this->language_manager->get_languages_for_select();
         
         echo '<div class="nexus-target-languages">';
         foreach ($languages as $code => $name) {
             $checked = in_array($code, $target_languages) ? 'checked' : '';
-            echo '<label style="display: block; margin-bottom: 5px;">';
-            echo '<input type="checkbox" name="nexus_translator_language_settings[target_languages][]" value="' . esc_attr($code) . '" ' . $checked . '> ';
-            echo esc_html($name);
-            echo '</label>';
+            echo '<label><input type="checkbox" name="nexus_translator_language_settings[target_languages][]" value="' . esc_attr($code) . '" ' . $checked . '> ' . esc_html($name) . '</label>';
         }
         echo '</div>';
         echo '<p class="description">' . __('Languages to translate content into.', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render debug mode field
-     */
     public function render_debug_mode_field() {
         $settings = get_option('nexus_translator_options', array());
         $debug_mode = $settings['debug_mode'] ?? false;
         
         echo '<input type="checkbox" id="debug_mode" name="nexus_translator_options[debug_mode]" value="1"' . checked($debug_mode, true, false) . '> ';
         echo '<label for="debug_mode">' . __('Enable debug mode', 'nexus-ai-wp-translator') . '</label>';
-        echo '<p class="description">' . __('Log API requests and responses for debugging. Only enable if needed.', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p class="description">' . __('Log API requests for debugging.', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Render preserve data field
-     */
     public function render_preserve_data_field() {
         $preserve_data = get_option('nexus_translator_preserve_on_uninstall', false);
         
         echo '<input type="checkbox" id="preserve_on_uninstall" name="nexus_translator_preserve_on_uninstall" value="1"' . checked($preserve_data, true, false) . '> ';
         echo '<label for="preserve_on_uninstall">' . __('Keep translation data when uninstalling plugin', 'nexus-ai-wp-translator') . '</label>';
-        echo '<p class="description">' . __('If checked, translation relationships will be preserved when the plugin is uninstalled.', 'nexus-ai-wp-translator') . '</p>';
     }
     
-    /**
-     * Sanitize API settings
-     */
+    public function render_analytics_retention_field() {
+        $retention = get_option('nexus_translator_analytics_retention', 30);
+        
+        echo '<input type="number" id="analytics_retention" name="nexus_translator_analytics_retention" value="' . esc_attr($retention) . '" min="7" max="365" /> days';
+        echo '<p class="description">' . __('How long to keep analytics data. Default: 30 days', 'nexus-ai-wp-translator') . '</p>';
+    }
+    
+    // Section descriptions
+    public function render_api_section_description() {
+        echo '<p>' . __('Configure your Claude AI API settings.', 'nexus-ai-wp-translator') . '</p>';
+        echo '<p><a href="https://console.anthropic.com/" target="_blank">' . __('Get your API key from Anthropic Console', 'nexus-ai-wp-translator') . '</a></p>';
+    }
+    
+    public function render_rate_limiting_section_description() {
+        echo '<div class="nexus-rate-limiting-info">';
+        echo '<p>' . __('Configure API rate limiting and safety features.', 'nexus-ai-wp-translator') . '</p>';
+        
+        if (class_exists('Translator_API')) {
+            $api = new Translator_API();
+            $usage_stats = $api->get_usage_stats();
+            
+            echo '<div class="nexus-current-usage">';
+            echo '<h4>' . __('Current Usage', 'nexus-ai-wp-translator') . '</h4>';
+            echo '<div class="nexus-usage-grid">';
+            echo '<div class="nexus-usage-item">';
+            echo '<span class="nexus-usage-label">' . __('Calls Today:', 'nexus-ai-wp-translator') . '</span>';
+            echo '<span class="nexus-usage-value">' . $usage_stats['calls_today'] . ' / ' . $usage_stats['limit_day'] . '</span>';
+            echo '</div>';
+            echo '<div class="nexus-usage-item">';
+            echo '<span class="nexus-usage-label">' . __('Calls This Hour:', 'nexus-ai-wp-translator') . '</span>';
+            echo '<span class="nexus-usage-value">' . $usage_stats['calls_hour'] . ' / ' . $usage_stats['limit_hour'] . '</span>';
+            echo '</div>';
+            echo '</div>';
+            
+            echo '<div class="nexus-admin-actions">';
+            echo '<button type="button" id="reset-rate-limits" class="button">' . __('Reset Rate Limits', 'nexus-ai-wp-translator') . '</button>';
+            if ($usage_stats['emergency_stop']) {
+                echo '<button type="button" id="reset-emergency-stop" class="button button-primary">' . __('Reset Emergency Stop', 'nexus-ai-wp-translator') . '</button>';
+            }
+            echo '</div>';
+            echo '</div>';
+        }
+        echo '</div>';
+    }
+    
+    public function render_language_section_description() {
+        echo '<p>' . __('Configure the source and target languages for translation.', 'nexus-ai-wp-translator') . '</p>';
+    }
+    
+    public function render_general_section_description() {
+        echo '<p>' . __('General plugin settings and behavior options.', 'nexus-ai-wp-translator') . '</p>';
+    }
+    
+    // Sanitization methods
     public function sanitize_api_settings($input) {
         $sanitized = array();
         
@@ -556,9 +593,6 @@ class Translator_Admin {
         return $sanitized;
     }
     
-    /**
-     * Sanitize language settings
-     */
     public function sanitize_language_settings($input) {
         $sanitized = array();
         
@@ -581,9 +615,6 @@ class Translator_Admin {
         return $sanitized;
     }
     
-    /**
-     * Sanitize general settings
-     */
     public function sanitize_general_settings($input) {
         $sanitized = array();
         
@@ -595,10 +626,6 @@ class Translator_Admin {
             $sanitized['cache_translations'] = (bool) $input['cache_translations'];
         }
         
-        if (isset($input['show_language_switcher'])) {
-            $sanitized['show_language_switcher'] = (bool) $input['show_language_switcher'];
-        }
-        
         // Handle preserve data setting separately
         if (isset($_POST['nexus_translator_preserve_on_uninstall'])) {
             update_option('nexus_translator_preserve_on_uninstall', true);
@@ -606,14 +633,18 @@ class Translator_Admin {
             update_option('nexus_translator_preserve_on_uninstall', false);
         }
         
+        // Handle analytics retention separately
+        if (isset($_POST['nexus_translator_analytics_retention'])) {
+            $retention = max(7, min(365, (int) $_POST['nexus_translator_analytics_retention']));
+            update_option('nexus_translator_analytics_retention', $retention);
+        }
+        
         return $sanitized;
     }
     
-    /**
-     * Handle reset rate limits AJAX
-     */
+    // AJAX handlers
     public function handle_reset_rate_limits() {
-        if (!wp_verify_nonce($_POST['nonce'], 'nexus_admin_nonce') || !current_user_can('manage_options')) {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
             wp_send_json_error('Access denied');
         }
         
@@ -622,9 +653,7 @@ class Translator_Admin {
             $result = $api->reset_rate_limits();
             
             if ($result) {
-                wp_send_json_success(array(
-                    'message' => __('Rate limits reset successfully', 'nexus-ai-wp-translator')
-                ));
+                wp_send_json_success(array('message' => __('Rate limits reset successfully', 'nexus-ai-wp-translator')));
             } else {
                 wp_send_json_error(__('Failed to reset rate limits', 'nexus-ai-wp-translator'));
             }
@@ -633,11 +662,8 @@ class Translator_Admin {
         }
     }
     
-    /**
-     * Handle reset emergency stop AJAX
-     */
     public function handle_reset_emergency() {
-        if (!wp_verify_nonce($_POST['nonce'], 'nexus_admin_nonce') || !current_user_can('manage_options')) {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
             wp_send_json_error('Access denied');
         }
         
@@ -645,14 +671,246 @@ class Translator_Admin {
         delete_option('nexus_translator_emergency_reason');
         delete_option('nexus_translator_emergency_time');
         
+        wp_send_json_success(array('message' => __('Emergency stop reset successfully', 'nexus-ai-wp-translator')));
+    }
+    
+    public function handle_get_analytics() {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
+            wp_send_json_error('Access denied');
+        }
+        
+        $analytics = $this->get_analytics_data();
+        wp_send_json_success($analytics);
+    }
+    
+    public function handle_export_config() {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
+            wp_send_json_error('Access denied');
+        }
+        
+        $config = array(
+            'api_settings' => get_option('nexus_translator_api_settings', array()),
+            'language_settings' => get_option('nexus_translator_language_settings', array()),
+            'general_options' => get_option('nexus_translator_options', array()),
+            'exported_at' => current_time('mysql'),
+            'plugin_version' => defined('NEXUS_TRANSLATOR_VERSION') ? NEXUS_TRANSLATOR_VERSION : '1.0.0',
+            'site_url' => get_site_url()
+        );
+        
         wp_send_json_success(array(
-            'message' => __('Emergency stop reset successfully', 'nexus-ai-wp-translator')
+            'config' => $config,
+            'filename' => 'nexus-translator-config-' . date('Y-m-d-H-i-s') . '.json'
         ));
     }
     
-    /**
-     * Admin notices
-     */
+    public function handle_import_config() {
+        if (!wp_verify_nonce($_POST['nonce'], 'nexus_translator_nonce') || !current_user_can('manage_options')) {
+            wp_send_json_error('Access denied');
+        }
+        
+        if (!isset($_POST['config_data'])) {
+            wp_send_json_error('No configuration data provided');
+        }
+        
+        $config_data = json_decode(stripslashes($_POST['config_data']), true);
+        
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            wp_send_json_error('Invalid JSON configuration');
+        }
+        
+        $imported = 0;
+        
+        if (isset($config_data['api_settings']) && is_array($config_data['api_settings'])) {
+            update_option('nexus_translator_api_settings', $config_data['api_settings']);
+            $imported++;
+        }
+        
+        if (isset($config_data['language_settings']) && is_array($config_data['language_settings'])) {
+            update_option('nexus_translator_language_settings', $config_data['language_settings']);
+            $imported++;
+        }
+        
+        if (isset($config_data['general_options']) && is_array($config_data['general_options'])) {
+            update_option('nexus_translator_options', $config_data['general_options']);
+            $imported++;
+        }
+        
+        wp_send_json_success(array(
+            'message' => sprintf(__('Configuration imported successfully! %d sections updated.', 'nexus-ai-wp-translator'), $imported)
+        ));
+    }
+    
+    // Helper methods
+    private function get_analytics_data() {
+        global $wpdb;
+        
+        $retention_days = get_option('nexus_translator_analytics_retention', 30);
+        $since_date = date('Y-m-d H:i:s', strtotime("-{$retention_days} days"));
+        
+        // Get translation statistics
+        $requests = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key = '_nexus_translation_timestamp' AND meta_value > %s",
+            strtotime($since_date)
+        ));
+        
+        $successful = $wpdb->get_var($wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->postmeta} pm1 
+             JOIN {$wpdb->postmeta} pm2 ON pm1.post_id = pm2.post_id 
+             WHERE pm1.meta_key = '_nexus_translation_timestamp' 
+             AND pm1.meta_value > %s 
+             AND pm2.meta_key = '_nexus_translation_status' 
+             AND pm2.meta_value = 'completed'",
+            strtotime($since_date)
+        ));
+        
+        return array(
+            'totals' => array(
+                'requests' => (int) $requests,
+                'successful' => (int) $successful,
+                'failed' => (int) $requests - (int) $successful,
+                'tokens' => get_option('nexus_translator_total_tokens', 0)
+            ),
+            'language_breakdown' => $this->get_language_breakdown(),
+            'recent_activity' => $this->get_recent_activity()
+        );
+    }
+    
+    private function get_language_breakdown() {
+        global $wpdb;
+        
+        $results = $wpdb->get_results(
+            "SELECT meta_value as language, COUNT(*) as total 
+             FROM {$wpdb->postmeta} 
+             WHERE meta_key = '_nexus_language' 
+             GROUP BY meta_value"
+        );
+        
+        $breakdown = array();
+        foreach ($results as $result) {
+            $breakdown[$result->language] = array(
+                'total' => (int) $result->total,
+                'successful' => (int) $result->total, // Simplified for now
+                'failed' => 0
+            );
+        }
+        
+        return $breakdown;
+    }
+    
+    private function get_recent_activity() {
+        global $wpdb;
+        
+        $activities = $wpdb->get_results(
+            "SELECT p.ID as post_id, pm1.meta_value as timestamp, pm2.meta_value as language, pm3.meta_value as status
+             FROM {$wpdb->posts} p
+             JOIN {$wpdb->postmeta} pm1 ON p.ID = pm1.post_id AND pm1.meta_key = '_nexus_translation_timestamp'
+             JOIN {$wpdb->postmeta} pm2 ON p.ID = pm2.post_id AND pm2.meta_key = '_nexus_language'
+             JOIN {$wpdb->postmeta} pm3 ON p.ID = pm3.post_id AND pm3.meta_key = '_nexus_translation_status'
+             ORDER BY pm1.meta_value DESC
+             LIMIT 20"
+        );
+        
+        $recent = array();
+        foreach ($activities as $activity) {
+            $recent[] = array(
+                'post_id' => (int) $activity->post_id,
+                'timestamp' => (int) $activity->timestamp,
+                'target_language' => $activity->language,
+                'success' => $activity->status === 'completed',
+                'user_login' => 'System' // Simplified for now
+            );
+        }
+        
+        return $recent;
+    }
+    
+    public function add_dashboard_widget() {
+        if (current_user_can('manage_options')) {
+            wp_add_dashboard_widget(
+                'nexus_translator_widget',
+                __('Nexus AI Translator Status', 'nexus-ai-wp-translator'),
+                array($this, 'render_dashboard_widget')
+            );
+        }
+    }
+    
+    public function render_dashboard_widget() {
+        if (!class_exists('Translator_API')) {
+            echo '<p>' . __('API class not available', 'nexus-ai-wp-translator') . '</p>';
+            return;
+        }
+        
+        $api = new Translator_API();
+        $usage_stats = $api->get_usage_stats();
+        $analytics = $this->get_analytics_data();
+        
+        ?>
+        <div class="nexus-dashboard-widget">
+            <div class="nexus-widget-stats">
+                <div class="nexus-widget-stat">
+                    <span class="nexus-stat-number"><?php echo $usage_stats['calls_today']; ?></span>
+                    <span class="nexus-stat-label"><?php _e('API Calls Today', 'nexus-ai-wp-translator'); ?></span>
+                </div>
+                <div class="nexus-widget-stat">
+                    <span class="nexus-stat-number"><?php echo $analytics['totals']['requests']; ?></span>
+                    <span class="nexus-stat-label"><?php _e('Translations (30d)', 'nexus-ai-wp-translator'); ?></span>
+                </div>
+            </div>
+            
+            <?php if ($usage_stats['emergency_stop']): ?>
+                <div class="nexus-widget-alert">
+                    <span class="dashicons dashicons-warning"></span>
+                    <?php _e('Emergency stop is active!', 'nexus-ai-wp-translator'); ?>
+                    <a href="<?php echo admin_url('admin.php?page=nexus-translator-settings&tab=advanced'); ?>"><?php _e('Fix now', 'nexus-ai-wp-translator'); ?></a>
+                </div>
+            <?php endif; ?>
+            
+            <div class="nexus-widget-actions">
+                <a href="<?php echo admin_url('admin.php?page=nexus-translator-settings'); ?>" class="button button-primary">
+                    <?php _e('Manage Settings', 'nexus-ai-wp-translator'); ?>
+                </a>
+            </div>
+        </div>
+        
+        <style>
+        .nexus-dashboard-widget .nexus-widget-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+        .nexus-widget-stat {
+            text-align: center;
+            flex: 1;
+        }
+        .nexus-stat-number {
+            display: block;
+            font-size: 24px;
+            font-weight: bold;
+            color: #0073aa;
+        }
+        .nexus-stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        .nexus-widget-alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            color: #856404;
+        }
+        .nexus-widget-alert .dashicons {
+            color: #856404;
+            vertical-align: middle;
+        }
+        .nexus-widget-actions {
+            text-align: center;
+        }
+        </style>
+        <?php
+    }
+    
     public function admin_notices() {
         // Check if API is configured
         $api_settings = get_option('nexus_translator_api_settings', array());
@@ -668,14 +926,12 @@ class Translator_Admin {
         // Check emergency stop
         if (get_option('nexus_translator_emergency_stop', false)) {
             $reason = get_option('nexus_translator_emergency_reason', 'Unknown');
-            $time = get_option('nexus_translator_emergency_time', time());
             
             echo '<div class="notice notice-error">';
             echo '<h3>🚨 ' . __('Nexus Translator Emergency Stop Active', 'nexus-ai-wp-translator') . '</h3>';
             echo '<p><strong>' . __('All translation functionality has been disabled for safety.', 'nexus-ai-wp-translator') . '</strong></p>';
             echo '<p>' . __('Reason:', 'nexus-ai-wp-translator') . ' ' . esc_html($reason) . '</p>';
-            echo '<p>' . __('Time:', 'nexus-ai-wp-translator') . ' ' . date('Y-m-d H:i:s', $time) . '</p>';
-            echo '<p><a href="' . admin_url('admin.php?page=nexus-translator-settings') . '" class="button button-primary">' . __('Go to Settings to Reset', 'nexus-ai-wp-translator') . '</a></p>';
+            echo '<p><a href="' . admin_url('admin.php?page=nexus-translator-settings&tab=advanced') . '" class="button button-primary">' . __('Go to Settings to Reset', 'nexus-ai-wp-translator') . '</a></p>';
             echo '</div>';
         }
         
@@ -684,8 +940,8 @@ class Translator_Admin {
             $api = new Translator_API();
             $usage_stats = $api->get_usage_stats();
             
-            // Warning at 80% of daily limit
             $daily_percentage = ($usage_stats['calls_today'] / $usage_stats['limit_day']) * 100;
+            
             if ($daily_percentage >= 80 && $daily_percentage < 100) {
                 echo '<div class="notice notice-warning is-dismissible">';
                 echo '<p>' . sprintf(
@@ -696,38 +952,9 @@ class Translator_Admin {
                 ) . '</p>';
                 echo '</div>';
             }
-            
-            // Critical warning at 95% of daily limit
-            if ($daily_percentage >= 95 && $daily_percentage < 100) {
-                echo '<div class="notice notice-error">';
-                echo '<p>' . sprintf(
-                    __('Nexus Translator: CRITICAL - You have used %d%% of your daily API limit (%d/%d calls). Consider increasing the limit or reducing usage.', 'nexus-ai-wp-translator'),
-                    round($daily_percentage),
-                    $usage_stats['calls_today'],
-                    $usage_stats['limit_day']
-                ) . '</p>';
-                echo '</div>';
-            }
-        }
-        
-        // Show success message after emergency reset
-        if (isset($_GET['emergency_reset']) && $_GET['emergency_reset'] === '1') {
-            echo '<div class="notice notice-success is-dismissible">';
-            echo '<p>' . __('Emergency stop has been reset. Translation functionality is now re-enabled.', 'nexus-ai-wp-translator') . '</p>';
-            echo '</div>';
-        }
-        
-        // Show success message after settings save
-        if (isset($_GET['settings-updated']) && $_GET['settings-updated']) {
-            echo '<div class="notice notice-success is-dismissible">';
-            echo '<p>' . __('Settings saved successfully! Rate limiting configuration updated.', 'nexus-ai-wp-translator') . '</p>';
-            echo '</div>';
         }
     }
     
-    /**
-     * Check if current page is translator related
-     */
     private function is_translator_page() {
         $screen = get_current_screen();
         return $screen && (
@@ -736,32 +963,135 @@ class Translator_Admin {
         );
     }
     
-    /**
-     * Add admin scripts for enhanced functionality
-     */
     public function enqueue_admin_scripts($hook) {
         if ($hook !== 'settings_page_nexus-translator-settings') {
             return;
         }
         
         wp_enqueue_script(
-            'nexus-translator-admin-enhanced',
-            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-enhanced.js',
+            'nexus-translator-admin',
+            NEXUS_TRANSLATOR_PLUGIN_URL . 'admin/js/admin-script.js',
             array('jquery'),
             NEXUS_TRANSLATOR_VERSION,
             true
         );
         
-        wp_localize_script('nexus-translator-admin-enhanced', 'nexusAdminAjax', array(
+        wp_localize_script('nexus-translator-admin', 'nexusTranslator', array(
             'ajaxUrl' => admin_url('admin-ajax.php'),
-            'nonce' => wp_create_nonce('nexus_admin_nonce'),
+            'nonce' => wp_create_nonce('nexus_translator_nonce'),
             'strings' => array(
-                'resetLimits' => __('Are you sure you want to reset rate limits?', 'nexus-ai-wp-translator'),
-                'resetEmergency' => __('Are you sure you want to reset emergency stop?', 'nexus-ai-wp-translator'),
                 'processing' => __('Processing...', 'nexus-ai-wp-translator'),
                 'success' => __('Success!', 'nexus-ai-wp-translator'),
-                'error' => __('Error occurred', 'nexus-ai-wp-translator')
+                'error' => __('Error occurred', 'nexus-ai-wp-translator'),
+                'confirmReset' => __('Are you sure you want to reset rate limits?', 'nexus-ai-wp-translator'),
+                'confirmEmergency' => __('Are you sure you want to reset emergency stop?', 'nexus-ai-wp-translator')
             )
         ));
+    }
+    
+    private function add_analytics_styles() {
+        ?>
+        <style>
+        .nexus-analytics-dashboard { max-width: 1200px; }
+        .nexus-analytics-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .nexus-summary-card {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .nexus-summary-card h3 {
+            margin: 0 0 10px 0;
+            color: #666;
+            font-size: 14px;
+            text-transform: uppercase;
+        }
+        .nexus-summary-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #0073aa;
+            margin-bottom: 5px;
+        }
+        .nexus-summary-subtitle {
+            color: #888;
+            font-size: 12px;
+        }
+        .nexus-analytics-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        </style>
+        <?php
+    }
+    
+    private function add_advanced_styles() {
+        ?>
+        <style>
+        .nexus-advanced-settings { max-width: 1200px; }
+        .nexus-status-overview,
+        .nexus-emergency-controls,
+        .nexus-config-import {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .nexus-status-overview h3,
+        .nexus-emergency-controls h3,
+        .nexus-config-import h3 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 2px solid #0073aa;
+            padding-bottom: 10px;
+        }
+        .nexus-status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .nexus-status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: #f9f9f9;
+            border-radius: 6px;
+            border-left: 4px solid #ddd;
+        }
+        .nexus-status-label {
+            font-weight: 500;
+            color: #666;
+        }
+        .nexus-status-value {
+            font-weight: bold;
+        }
+        .nexus-status-value.success {
+            color: #46b450;
+        }
+        .nexus-status-value.error {
+            color: #dc3232;
+        }
+        .nexus-emergency-controls {
+            background: #fff8e1;
+            border-color: #ffb900;
+        }
+        .nexus-control-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        </style>
+        <?php
     }
 }

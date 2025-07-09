@@ -10,286 +10,6 @@
 
 if (!defined('ABSPATH')) {
     exit;
-        // Simple test translation
-        $test_content = "TITLE: Hello World\n\nCONTENT:\nThis is a test message to verify the API connection.";
-        $result = $this->translate_content($test_content, 'en', 'fr', 'post');
-        
-        if ($result['success']) {
-            return array(
-                'success' => true,
-                'message' => __('API connection successful', 'nexus-ai-wp-translator'),
-                'test_translation' => $result['translated_content'],
-                'usage' => $result['usage'] ?? null,
-                'settings_used' => array(
-                    'model' => $this->get_model(),
-                    'max_tokens' => $this->get_max_tokens(),
-                    'temperature' => $this->get_temperature(),
-                    'timeout' => $this->get_request_timeout()
-                )
-            );
-        }
-        
-        return $result;
-    }
-    
-    /**
-     * Get API usage statistics with configurable limits
-     */
-    public function get_usage_stats() {
-        return array(
-            'calls_today' => self::$request_count_day,
-            'calls_hour' => self::$request_count_hour,
-            'limit_day' => $this->get_max_calls_per_day(),
-            'limit_hour' => $this->get_max_calls_per_hour(),
-            'emergency_stop' => $this->is_emergency_stop_active(),
-            'rate_limit_hit' => get_transient('nexus_api_rate_limit_hit') ? true : false,
-            'settings' => array(
-                'min_interval' => $this->get_min_request_interval(),
-                'timeout' => $this->get_request_timeout(),
-                'emergency_threshold' => $this->get_emergency_threshold(),
-                'cooldown' => $this->get_translation_cooldown()
-            )
-        );
-    }
-    
-    /**
-     * Reset rate limits (admin only)
-     */
-    public function reset_rate_limits() {
-        if (!current_user_can('manage_options')) {
-            return false;
-        }
-        
-        // Clear all rate limiting data
-        $hour_key = 'nexus_api_calls_hour_' . date('YmdH');
-        $day_key = 'nexus_api_calls_day_' . date('Ymd');
-        
-        delete_transient($hour_key);
-        delete_transient($day_key);
-        delete_transient('nexus_last_api_request');
-        delete_transient('nexus_api_rate_limit_hit');
-        
-        // Reset static counters
-        self::$request_count_hour = 0;
-        self::$request_count_day = 0;
-        self::$last_request_time = 0;
-        
-        error_log('Nexus Translator: Rate limits reset by administrator');
-        
-        return true;
-    }
-    
-    /**
-     * Get rate limit status with configurable values
-     */
-    public function get_rate_limit_status() {
-        return array(
-            'hour_calls' => self::$request_count_hour,
-            'hour_limit' => $this->get_max_calls_per_hour(),
-            'day_calls' => self::$request_count_day,
-            'day_limit' => $this->get_max_calls_per_day(),
-            'last_request' => self::$last_request_time,
-            'min_interval' => $this->get_min_request_interval(),
-            'can_make_request' => $this->can_make_request(),
-            'time_until_next' => $this->time_until_next_request(),
-            'percentages' => array(
-                'hour' => round((self::$request_count_hour / $this->get_max_calls_per_hour()) * 100, 1),
-                'day' => round((self::$request_count_day / $this->get_max_calls_per_day()) * 100, 1)
-            )
-        );
-    }
-    
-    /**
-     * Check if we can make a request right now
-     */
-    public function can_make_request() {
-        if ($this->is_emergency_stop_active()) {
-            return false;
-        }
-        
-        $rate_check = $this->check_rate_limits();
-        return $rate_check['success'];
-    }
-    
-    /**
-     * Get time until next allowed request
-     */
-    public function time_until_next_request() {
-        if ($this->is_emergency_stop_active()) {
-            return -1; // Emergency stop active
-        }
-        
-        $current_time = time();
-        $time_since_last = $current_time - self::$last_request_time;
-        $min_interval = $this->get_min_request_interval();
-        
-        if ($time_since_last < $min_interval) {
-            return $min_interval - $time_since_last;
-        }
-        
-        return 0; // Can make request now
-    }
-    
-    /**
-     * Check if translation cooldown allows new translation
-     */
-    public function can_translate_post($post_id) {
-        if ($this->is_emergency_stop_active()) {
-            return array(
-                'can_translate' => false,
-                'reason' => __('Emergency stop active', 'nexus-ai-wp-translator')
-            );
-        }
-        
-        // Check if we can make API request
-        if (!$this->can_make_request()) {
-            $status = $this->get_rate_limit_status();
-            return array(
-                'can_translate' => false,
-                'reason' => sprintf(
-                    __('Rate limit reached: %d/%d calls today, %d/%d this hour', 'nexus-ai-wp-translator'),
-                    $status['day_calls'],
-                    $status['day_limit'],
-                    $status['hour_calls'],
-                    $status['hour_limit']
-                )
-            );
-        }
-        
-        // Check translation cooldown
-        $active_translations = get_option('nexus_translator_active_translations', array());
-        $lock_key = "post_$post_id";
-        
-        if (isset($active_translations[$lock_key])) {
-            $lock_time = $active_translations[$lock_key];
-            $current_time = current_time('timestamp');
-            $cooldown = $this->get_translation_cooldown();
-            
-            if (($current_time - $lock_time) < $cooldown) {
-                $remaining = $cooldown - ($current_time - $lock_time);
-                return array(
-                    'can_translate' => false,
-                    'reason' => sprintf(
-                        __('Translation cooldown: %d seconds remaining', 'nexus-ai-wp-translator'),
-                        $remaining
-                    ),
-                    'cooldown_remaining' => $remaining
-                );
-            }
-        }
-        
-        return array(
-            'can_translate' => true,
-            'reason' => __('Ready to translate', 'nexus-ai-wp-translator')
-        );
-    }
-    
-    /**
-     * Get current configuration summary
-     */
-    public function get_configuration_summary() {
-        return array(
-            'api_configured' => $this->is_api_configured(),
-            'model' => $this->get_model(),
-            'max_tokens' => $this->get_max_tokens(),
-            'temperature' => $this->get_temperature(),
-            'limits' => array(
-                'calls_per_hour' => $this->get_max_calls_per_hour(),
-                'calls_per_day' => $this->get_max_calls_per_day(),
-                'min_interval' => $this->get_min_request_interval(),
-                'timeout' => $this->get_request_timeout(),
-                'emergency_threshold' => $this->get_emergency_threshold(),
-                'translation_cooldown' => $this->get_translation_cooldown()
-            ),
-            'safety' => array(
-                'emergency_stop' => $this->is_emergency_stop_active(),
-                'debug_mode' => $this->is_debug_mode()
-            )
-        );
-    }
-    
-    /**
-     * Validate configuration settings
-     */
-    public function validate_configuration() {
-        $issues = array();
-        
-        // Check API key
-        if (!$this->is_api_configured()) {
-            $issues[] = __('API key not configured', 'nexus-ai-wp-translator');
-        }
-        
-        // Check if limits are reasonable
-        $max_hour = $this->get_max_calls_per_hour();
-        $max_day = $this->get_max_calls_per_day();
-        
-        if ($max_hour > $max_day) {
-            $issues[] = __('Hourly limit cannot be higher than daily limit', 'nexus-ai-wp-translator');
-        }
-        
-        if ($max_day > 1000) {
-            $issues[] = __('Daily limit is very high - consider lower value to prevent unexpected charges', 'nexus-ai-wp-translator');
-        }
-        
-        $timeout = $this->get_request_timeout();
-        if ($timeout < 30) {
-            $issues[] = __('Request timeout is very low - may cause translation failures', 'nexus-ai-wp-translator');
-        }
-        
-        $cooldown = $this->get_translation_cooldown();
-        if ($cooldown < 60) {
-            $issues[] = __('Translation cooldown is very low - may allow accidental re-translations', 'nexus-ai-wp-translator');
-        }
-        
-        return array(
-            'valid' => empty($issues),
-            'issues' => $issues
-        );
-    }
-    
-    /**
-     * Export configuration for backup
-     */
-    public function export_configuration() {
-        return array(
-            'api_settings' => $this->api_settings,
-            'exported_at' => current_time('mysql'),
-            'plugin_version' => defined('NEXUS_TRANSLATOR_VERSION') ? NEXUS_TRANSLATOR_VERSION : '1.0.0'
-        );
-    }
-    
-    /**
-     * Import configuration from backup
-     */
-    public function import_configuration($config_data) {
-        if (!current_user_can('manage_options')) {
-            return false;
-        }
-        
-        if (!is_array($config_data) || !isset($config_data['api_settings'])) {
-            return false;
-        }
-        
-        // Validate imported settings
-        $settings = $config_data['api_settings'];
-        
-        // Basic validation
-        if (isset($settings['max_calls_per_hour']) && $settings['max_calls_per_hour'] > 1000) {
-            return false; // Unreasonable limit
-        }
-        
-        if (isset($settings['max_calls_per_day']) && $settings['max_calls_per_day'] > 10000) {
-            return false; // Unreasonable limit
-        }
-        
-        // Update settings
-        update_option('nexus_translator_api_settings', $settings);
-        $this->api_settings = $settings;
-        
-        error_log('Nexus Translator: Configuration imported successfully');
-        
-        return true;
-    }
 }
 
 class Translator_API {
@@ -894,7 +614,7 @@ class Translator_API {
         $test_content = "TITLE: Hello World\n\nCONTENT:\nThis is a test message to verify the API connection.";
         $result = $this->translate_content($test_content, 'en', 'fr', 'post');
         
-        if ($result) {
+        if ($result['success']) {
             return array(
                 'success' => true,
                 'message' => __('API connection successful', 'nexus-ai-wp-translator'),
@@ -917,6 +637,9 @@ class Translator_API {
      */
     public function get_usage_stats() {
         return array(
+            'translations_today' => self::$request_count_day,
+            'translations_month' => 0, // Placeholder
+            'tokens_used' => 0, // Placeholder
             'calls_today' => self::$request_count_day,
             'calls_hour' => self::$request_count_hour,
             'limit_day' => $this->get_max_calls_per_day(),
@@ -949,6 +672,11 @@ class Translator_API {
         delete_transient('nexus_last_api_request');
         delete_transient('nexus_api_rate_limit_hit');
         
+        // Reset emergency stop
+        delete_option('nexus_translator_emergency_stop');
+        delete_option('nexus_translator_emergency_reason');
+        delete_option('nexus_translator_emergency_time');
+        
         // Reset static counters
         self::$request_count_hour = 0;
         self::$request_count_day = 0;
@@ -973,8 +701,8 @@ class Translator_API {
             'can_make_request' => $this->can_make_request(),
             'time_until_next' => $this->time_until_next_request(),
             'percentages' => array(
-                'hour' => round((self::$request_count_hour / $this->get_max_calls_per_hour()) * 100, 1),
-                'day' => round((self::$request_count_day / $this->get_max_calls_per_day()) * 100, 1)
+                'hour' => round((self::$request_count_hour / max(1, $this->get_max_calls_per_hour())) * 100, 1),
+                'day' => round((self::$request_count_day / max(1, $this->get_max_calls_per_day())) * 100, 1)
             )
         );
     }
@@ -1170,6 +898,4 @@ class Translator_API {
         
         return true;
     }
-    }
-    
 }
