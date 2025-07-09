@@ -992,10 +992,4 @@ class Translator_API {
         );
     }
 
-    /**
-     * Mise à jour de test_api_connection pour utiliser la nouvelle méthode
-     */
-    public function test_api_connection() {
-        return $this->test_api_key_direct();
-    }
 }
