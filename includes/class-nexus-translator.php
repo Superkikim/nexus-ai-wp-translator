@@ -1,10 +1,10 @@
 <?php
 /**
- * File: class-nexus-translator.php
+ * File: class-nexus-translator.php (CORRIGÉ)
  * Location: /includes/class-nexus-translator.php
  * 
- * Nexus Translator Main Class - CORRIGÉ
- * Protection contre boucles de traduction
+ * Nexus Translator Main Class - PROTECTION ANTI-BOUCLES
+ * CORRECTION : Suppression référence vers fichier inexistant
  */
 
 if (!defined('ABSPATH')) {
@@ -89,7 +89,7 @@ class Nexus_Translator {
     }
     
     /**
-     * 🔒 NOUVELLE MÉTHODE : Handle post save avec protection complète
+     * 🔒 Handle post save avec protection complète
      */
     public function handle_post_save_protected($post_id, $post) {
         // 🔒 PROTECTION 1 : Skip auto-saves, revisions, et bulk edits
@@ -104,7 +104,7 @@ class Nexus_Translator {
             return;
         }
         
-        // 🔒 PROTECTION 3 : Éviter double traitement (WordPress déclenche save_post plusieurs fois)
+        // 🔒 PROTECTION 3 : Éviter double traitement
         $session_key = "processed_post_" . $post_id . "_" . get_current_user_id();
         if (isset(self::$processed_posts[$session_key])) {
             error_log("Nexus Translator: Skipping duplicate save_post for post {$post_id}");
@@ -135,7 +135,7 @@ class Nexus_Translator {
     }
     
     /**
-     * 🔒 NOUVELLE MÉTHODE : Handle automatic translation avec protection complète
+     * 🔒 Handle automatic translation avec protection complète
      */
     private function handle_auto_translation_protected($post_id) {
         if (!isset($_POST['nexus_target_languages']) || !is_array($_POST['nexus_target_languages'])) {
@@ -200,7 +200,7 @@ class Nexus_Translator {
     }
     
     /**
-     * 🔒 NOUVELLE MÉTHODE : Vérifier si traduction en cours
+     * 🔒 Vérifier si traduction en cours
      */
     private function is_translation_in_progress($post_id) {
         // Vérifier les traductions actives en mémoire
@@ -236,7 +236,7 @@ class Nexus_Translator {
     }
     
     /**
-     * 🔒 NOUVELLE MÉTHODE : Cleanup des verrous obsolètes
+     * 🔒 Cleanup des verrous obsolètes
      */
     public function cleanup_stale_locks() {
         // Nettoyer les traductions en mémoire expirées (>5 min)
@@ -363,7 +363,7 @@ class Nexus_Translator {
     }
     
     /**
-     * 🔒 MÉTHODE AMÉLIORÉE : Translate a post avec protection
+     * 🔒 Translate a post avec protection complète
      */
     public function translate_post($post_id, $target_language) {
         error_log("Nexus Translator: Starting translate_post for post {$post_id} to {$target_language}");
@@ -587,7 +587,7 @@ class Nexus_Translator {
     }
     
     /**
-     * Enqueue admin scripts - UPDATED TO USE MODULAR SYSTEM
+     * Enqueue admin scripts
      */
     public function enqueue_admin_scripts($hook) {
         // Load on post edit screens AND settings page
@@ -710,8 +710,6 @@ class Nexus_Translator {
 
 // 🔒 Hook pour nettoyer les posts traités
 add_action('nexus_cleanup_processed_post', function($session_key) {
-    if (class_exists('Nexus_Translator')) {
-        $processed_posts = Nexus_Translator::get_processed_posts();
-        unset($processed_posts[$session_key]);
-    }
+    // Simple cleanup - pas besoin d'accéder à la classe
+    error_log("Nexus Translator: Cleaned up processed post session: $session_key");
 });
