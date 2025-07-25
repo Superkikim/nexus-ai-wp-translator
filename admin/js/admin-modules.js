@@ -2,8 +2,8 @@
  * File: admin-modules.js
  * Location: /admin/js/admin-modules.js
  * 
- * Nexus AI WP Translator - Modular Components
- * All modules in one file for efficient loading
+ * Nexus AI WP Translator - Modular Components CORRIGÉ
+ * Protection contre boucles et double-clics
  */
 
 (function($, window) {
@@ -13,15 +13,18 @@
     window.NexusModules = {};
 
     /**
-     * TRANSLATION MODULE
-     * Handles post translation functionality
+     * TRANSLATION MODULE - CORRIGÉ
+     * Handles post translation functionality with loop protection
      */
     window.NexusModules.translation = {
+        
+        // 🔒 PROTECTION : Traductions en cours
+        activeTranslations: new Set(),
         
         init: function(core) {
             this.core = core;
             this.bindEvents();
-            core.log('Translation module loaded');
+            core.log('Translation module loaded with protection');
         },
 
         bindEvents: function() {
@@ -42,6 +45,18 @@
                 return;
             }
             
+            // 🔒 PROTECTION 1: Vérifier si traduction en cours
+            const translationKey = `${postId}_${targetLang}`;
+            if (this.activeTranslations.has(translationKey)) {
+                this.core.showNotice('warning', 'Translation already in progress for this language');
+                return;
+            }
+            
+            // 🔒 PROTECTION 2: Vérifier si bouton déjà disabled
+            if ($button.prop('disabled')) {
+                return;
+            }
+            
             this.startTranslation(postId, targetLang, $button);
         },
 
@@ -51,6 +66,11 @@
             const $button = $(e.target);
             const originalId = $button.data('original-id');
             const translatedId = $button.data('translated-id');
+            
+            // 🔒 PROTECTION : Vérifier si bouton déjà disabled
+            if ($button.prop('disabled')) {
+                return;
+            }
             
             if (!confirm('This will update the existing translation. Continue?')) {
                 return;
@@ -66,6 +86,13 @@
             const postId = $link.data('post-id');
             const targetLang = $link.data('target-lang');
             
+            // 🔒 PROTECTION : Vérifier si traduction en cours
+            const translationKey = `${postId}_${targetLang}`;
+            if (this.activeTranslations.has(translationKey)) {
+                this.core.showNotice('warning', 'Translation already in progress');
+                return;
+            }
+            
             if (!confirm('Are you sure you want to translate this post?')) {
                 return;
             }
@@ -74,10 +101,17 @@
         },
 
         startTranslation: function(postId, targetLang, $trigger) {
-            this.core.log(`Starting translation: Post ${postId} to ${targetLang}`);
+            const translationKey = `${postId}_${targetLang}`;
+            
+            this.core.log(`Starting PROTECTED translation: Post ${postId} to ${targetLang}`);
+            
+            // 🔒 PROTECTION 3: Ajouter à la liste des traductions actives
+            this.activeTranslations.add(translationKey);
+            
+            // 🔒 PROTECTION 4: Désactiver TOUS les boutons de traduction pour ce post
+            this.disableTranslationButtons(postId);
             
             this.showProgress('Preparing translation...');
-            this.core.setButtonState($trigger, 'loading');
             
             this.core.ajax('nexus_translate_post', {
                 post_id: postId,
@@ -95,12 +129,22 @@
                 this.showError('Server error occurred');
             })
             .always(() => {
-                this.core.setButtonState($trigger, 'normal');
+                // 🔒 PROTECTION 5: Nettoyer à la fin
+                this.activeTranslations.delete(translationKey);
+                this.enableTranslationButtons(postId);
                 this.hideProgress();
             });
         },
 
         updateTranslation: function(originalId, translatedId, $trigger) {
+            const updateKey = `update_${originalId}_${translatedId}`;
+            
+            // 🔒 PROTECTION : Éviter double update
+            if (this.activeTranslations.has(updateKey)) {
+                return;
+            }
+            
+            this.activeTranslations.add(updateKey);
             this.showProgress('Updating translation...');
             this.core.setButtonState($trigger, 'loading');
             
@@ -117,9 +161,23 @@
                 }
             })
             .always(() => {
+                this.activeTranslations.delete(updateKey);
                 this.core.setButtonState($trigger, 'normal');
                 this.hideProgress();
             });
+        },
+
+        // 🔒 NOUVELLES MÉTHODES DE PROTECTION
+        disableTranslationButtons: function(postId) {
+            $(`.nexus-translate-btn[data-post-id="${postId}"]`).prop('disabled', true);
+            $(`.nexus-translate-link[data-post-id="${postId}"]`).addClass('disabled');
+            this.core.log(`Disabled translation buttons for post ${postId}`);
+        },
+
+        enableTranslationButtons: function(postId) {
+            $(`.nexus-translate-btn[data-post-id="${postId}"]`).prop('disabled', false);
+            $(`.nexus-translate-link[data-post-id="${postId}"]`).removeClass('disabled');
+            this.core.log(`Enabled translation buttons for post ${postId}`);
         },
 
         showProgress: function(message) {
@@ -182,12 +240,16 @@
                     location.reload();
                 }
             }, 2000);
+        },
+
+        // 🔒 MÉTHODE DE DIAGNOSTIC
+        getActiveTranslations: function() {
+            return Array.from(this.activeTranslations);
         }
     };
 
     /**
-     * SETTINGS MODULE
-     * Handles settings page functionality
+     * SETTINGS MODULE - Inchangé mais avec protection
      */
     window.NexusModules.settings = {
         
@@ -224,6 +286,12 @@
             }
             
             const $button = $(e.target);
+            
+            // 🔒 PROTECTION : Éviter double-clic
+            if ($button.prop('disabled')) {
+                return;
+            }
+            
             this.core.setButtonState($button, 'loading', 'Resetting...');
             
             this.core.ajax('nexus_reset_rate_limits', {})
@@ -248,6 +316,12 @@
             }
             
             const $button = $(e.target);
+            
+            // 🔒 PROTECTION : Éviter double-clic
+            if ($button.prop('disabled')) {
+                return;
+            }
+            
             this.core.setButtonState($button, 'loading', 'Resetting...');
             
             this.core.ajax('nexus_reset_emergency', {})
@@ -326,31 +400,26 @@
         }
     };
 
-    /**
-     * MONITORING MODULE
-     * Handles real-time usage monitoring
-     */
+    // Autres modules inchangés...
     window.NexusModules.monitoring = {
-        
         init: function(core) {
             this.core = core;
             this.initUsageDisplay();
             this.startMonitoring();
             core.log('Monitoring module loaded');
         },
-
+        
         initUsageDisplay: function() {
             this.addProgressBars();
             this.updateUsage();
         },
-
+        
         startMonitoring: function() {
-            // Update every 30 seconds
             setInterval(() => {
                 this.updateUsage();
             }, 30000);
         },
-
+        
         addProgressBars: function() {
             $('.nexus-usage-item').each(function() {
                 if (!$(this).find('.nexus-progress-bar').length) {
@@ -358,7 +427,7 @@
                 }
             });
         },
-
+        
         updateUsage: function() {
             this.core.ajax('nexus_get_usage_stats', {})
                 .done((response) => {
@@ -367,19 +436,15 @@
                     }
                 });
         },
-
+        
         refreshDisplay: function(data) {
-            // Update text values
             $('.nexus-usage-value[data-type="today"]').text(`${data.calls_today} / ${data.limit_day}`);
             $('.nexus-usage-value[data-type="hour"]').text(`${data.calls_hour} / ${data.limit_hour}`);
             
-            // Update progress bars
             this.updateProgressBars(data);
-            
-            // Check warnings
             this.checkWarnings(data);
         },
-
+        
         updateProgressBars: function(data) {
             const hourPercent = Math.min(100, (data.calls_hour / data.limit_hour) * 100);
             const dayPercent = Math.min(100, (data.calls_today / data.limit_day) * 100);
@@ -395,7 +460,7 @@
                 $fill.css({ width: percent + '%', 'background-color': color });
             });
         },
-
+        
         checkWarnings: function(data) {
             $('.nexus-usage-warning').remove();
             
@@ -412,7 +477,7 @@
                 this.showWarning('critical', `Hourly limit almost reached (${Math.round(hourPercent)}%)`);
             }
         },
-
+        
         showWarning: function(level, message) {
             const className = level === 'critical' ? 'nexus-critical' : 'nexus-warning';
             const icon = level === 'critical' ? '🚨' : '⚠️';
@@ -422,18 +487,13 @@
         }
     };
 
-    /**
-     * UTILS MODULE
-     * Common utilities and helpers
-     */
     window.NexusModules.utils = {
-        
         init: function(core) {
             this.core = core;
             this.addStyles();
             core.log('Utils module loaded');
         },
-
+        
         validateForm: function($form) {
             let isValid = true;
             
@@ -448,7 +508,7 @@
             
             return isValid;
         },
-
+        
         addStyles: function() {
             if ($('#nexus-dynamic-styles').length) return;
             
@@ -463,30 +523,23 @@
                 .button-success { background: #46b450 !important; border-color: #46b450 !important; }
                 .button-danger { background: #dc3545 !important; border-color: #dc3545 !important; }
                 input.error { border-color: #dc3545; }
+                .disabled { opacity: 0.5; pointer-events: none; }
             `).appendTo('head');
         }
     };
 
-    /**
-     * BULK MODULE
-     * Handles bulk operations on post list
-     */
     window.NexusModules.bulk = {
-        
         init: function(core) {
             this.core = core;
             this.bindEvents();
             core.log('Bulk module loaded');
         },
-
+        
         bindEvents: function() {
-            // Bulk translation actions
             $(document).on('click', '.nexus-bulk-translate', this.handleBulkTranslation.bind(this));
-            
-            // Individual row actions
             $(document).on('click', '.nexus-translate-link', this.handleRowTranslation.bind(this));
         },
-
+        
         handleBulkTranslation: function(e) {
             e.preventDefault();
             
@@ -508,7 +561,7 @@
             
             this.processBulkTranslation(selectedPosts, targetLang);
         },
-
+        
         handleRowTranslation: function(e) {
             e.preventDefault();
             
@@ -522,7 +575,7 @@
             
             this.translateSinglePost(postId, targetLang, $link);
         },
-
+        
         getSelectedPosts: function() {
             const selected = [];
             $('#the-list input[name="post[]"]:checked').each(function() {
@@ -530,7 +583,7 @@
             });
             return selected;
         },
-
+        
         processBulkTranslation: function(postIds, targetLang) {
             const total = postIds.length;
             let completed = 0;
@@ -538,7 +591,6 @@
             
             this.showBulkProgress(0, total);
             
-            // Process posts sequentially to avoid API overload
             this.translatePostSequentially(postIds, targetLang, 0, (success) => {
                 if (success) completed++;
                 else failed++;
@@ -551,7 +603,7 @@
                 }
             });
         },
-
+        
         translatePostSequentially: function(postIds, targetLang, index, callback) {
             if (index >= postIds.length) return;
             
@@ -568,13 +620,12 @@
                 callback(false);
             })
             .always(() => {
-                // Wait 2 seconds between requests to respect rate limits
                 setTimeout(() => {
                     this.translatePostSequentially(postIds, targetLang, index + 1, callback);
                 }, 2000);
             });
         },
-
+        
         translateSinglePost: function(postId, targetLang, $trigger) {
             const $row = $trigger.closest('tr');
             this.showRowProgress($row);
@@ -594,7 +645,7 @@
                 this.showRowError($row, 'Translation failed');
             });
         },
-
+        
         showBulkProgress: function(progress, total) {
             const $notice = $(`
                 <div id="nexus-bulk-progress" class="notice notice-info">
@@ -608,14 +659,14 @@
             
             $('.wp-header-end').after($notice);
         },
-
+        
         updateBulkProgress: function(progress, completed, failed, total) {
             $('#nexus-bulk-progress .nexus-bulk-fill').css('width', progress + '%');
             $('#nexus-bulk-progress .nexus-bulk-text').text(
                 `Progress: ${completed} completed, ${failed} failed, ${total - completed - failed} remaining`
             );
         },
-
+        
         completeBulkTranslation: function(completed, failed) {
             const $progress = $('#nexus-bulk-progress');
             const message = `Bulk translation completed: ${completed} successful, ${failed} failed`;
@@ -629,17 +680,17 @@
                 $progress.fadeOut(() => $progress.remove());
             }, 5000);
         },
-
+        
         showRowProgress: function($row) {
             $row.find('.row-actions').append(' | <span class="nexus-row-progress">Translating...</span>');
         },
-
+        
         showRowSuccess: function($row, data) {
             $row.find('.nexus-row-progress').replaceWith(
                 `<span class="nexus-row-success">✓ <a href="${data.edit_link}" target="_blank">View Translation</a></span>`
             );
         },
-
+        
         showRowError: function($row, error) {
             $row.find('.nexus-row-progress').replaceWith(
                 `<span class="nexus-row-error">✗ ${error}</span>`

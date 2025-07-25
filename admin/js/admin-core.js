@@ -2,8 +2,8 @@
  * File: admin-core.js
  * Location: /admin/js/admin-core.js
  * 
- * Nexus AI WP Translator - Modular Admin Core
- * Base functionality and module loader
+ * Nexus AI WP Translator - Modular Admin Core CORRIGÉ
+ * Base functionality and module loader avec protection
  */
 
 (function($, window) {
@@ -23,14 +23,15 @@
             version: '1.0.0',
             debug: false,
             modules: {},
-            hooks: {}
+            hooks: {},
+            activeRequests: new Set() // 🔒 PROTECTION : Suivi des requêtes actives
         },
 
         /**
          * Initialize core
          */
         init: function(settings) {
-            console.log('Nexus Translator Core: Initializing');
+            console.log('Nexus Translator Core: Initializing with protection');
             
             // Merge configuration
             this.config = $.extend(true, this.config, settings);
@@ -42,7 +43,7 @@
             // Auto-load modules based on page context
             this.autoLoadModules();
             
-            console.log('Nexus Translator Core: Ready');
+            console.log('Nexus Translator Core: Ready with protection active');
         },
 
         /**
@@ -60,6 +61,9 @@
             
             // Set up AJAX defaults
             this.setupAjax();
+            
+            // 🔒 PROTECTION : Cleanup périodique des requêtes expirées
+            this.startRequestCleanup();
         },
 
         /**
@@ -146,9 +150,11 @@
             // Emergency cleanup button
             $(document).on('click', '.nexus-emergency-cleanup', this.handleEmergencyCleanup.bind(this));
         
-            // NEW: Monitor API key field changes
+            // Monitor API key field changes
             $(document).on('input paste keyup', '#claude_api_key', this.handleApiKeyChange.bind(this));
-
+            
+            // 🔒 PROTECTION : Gestion globale des erreurs AJAX
+            $(document).ajaxError(this.handleAjaxError.bind(this));
         },
 
         /**
@@ -168,14 +174,51 @@
         },
 
         /**
-         * Test API connection
+         * 🔒 NOUVELLE MÉTHODE : Démarrer le nettoyage périodique
+         */
+        startRequestCleanup: function() {
+            // Nettoyer les requêtes actives toutes les 30 secondes
+            setInterval(() => {
+                this.cleanupExpiredRequests();
+            }, 30000);
+        },
+
+        /**
+         * 🔒 NOUVELLE MÉTHODE : Nettoyer les requêtes expirées
+         */
+        cleanupExpiredRequests: function() {
+            const now = Date.now();
+            const timeout = 60000; // 60 secondes timeout
+            
+            this.config.activeRequests.forEach(request => {
+                if (now - request.timestamp > timeout) {
+                    this.config.activeRequests.delete(request);
+                    this.log(`Cleaned up expired request: ${request.id}`, 'warn');
+                }
+            });
+        },
+
+        /**
+         * 🔒 MÉTHODE AMÉLIORÉE : Test API connection avec protection
          */
         testApiConnection: function(e) {
             e.preventDefault();
             
             const $button = $(e.target);
             const $result = $('#api-test-result');
-            const $form = $button.closest('form');
+            
+            // 🔒 PROTECTION 1 : Éviter double-clic
+            if ($button.prop('disabled')) {
+                this.log('API test button already disabled');
+                return;
+            }
+            
+            // 🔒 PROTECTION 2 : Vérifier si test en cours
+            const testRequestId = 'api_test_' + Date.now();
+            if (this.isRequestActive('api_test')) {
+                this.showResult($result, 'error', 'API test already in progress');
+                return;
+            }
             
             // Récupérer la clé du champ
             const apiKey = $('#claude_api_key').val().trim();
@@ -185,35 +228,38 @@
                 return;
             }
             
-            this.setButtonState($button, 'loading', 'Saving & Testing...');
+            // 🔒 PROTECTION 3 : Marquer la requête comme active
+            this.addActiveRequest(testRequestId, 'api_test');
+            
+            this.setButtonState($button, 'loading', 'Testing...');
             $result.empty();
             
-            // SOLUTION : Sauvegarder d'abord, puis tester
-            this.ajax('save_api_settings', {
-                api_key: apiKey,
-                // Autres champs du formulaire si nécessaire
-                model: $('#model').val(),
-                max_tokens: $('#max_tokens').val(),
-                temperature: $('#temperature').val()
-            })
-            .done(() => {
-                // Maintenant tester avec la clé sauvegardée
-                return this.ajax('nexus_test_api_connection', {});
+            this.ajax('nexus_test_api_connection', {
+                api_key: apiKey
             })
             .done((response) => {
                 if (response.success) {
                     this.showResult($result, 'success', response.data.message, response.data.test_translation);
+                    this.setButtonState($button, 'success', 'Connection OK');
                 } else {
-                    this.showResult($result, 'error', response.data);
+                    this.showResult($result, 'error', response.data.error || 'Connection failed');
+                    this.setButtonState($button, 'error', 'Test Failed');
                 }
             })
-            .fail(() => {
-                this.showResult($result, 'error', 'Connection failed');
+            .fail((xhr, status, error) => {
+                this.showResult($result, 'error', 'Connection failed: ' + error);
+                this.setButtonState($button, 'error', 'Connection Failed');
             })
             .always(() => {
-                this.setButtonState($button, 'normal', 'Test Connection');
+                // 🔒 PROTECTION 4 : Nettoyer la requête active
+                this.removeActiveRequest(testRequestId);
+                
+                // Reset button after delay
+                setTimeout(() => {
+                    this.setButtonState($button, 'normal');
+                }, 3000);
             });
-        },            
+        },
 
         /**
          * Handle form submission
@@ -255,6 +301,9 @@
                 return;
             }
             
+            const $button = $(e.target);
+            this.setButtonState($button, 'loading', 'Cleaning...');
+            
             this.ajax('nexus_emergency_cleanup', {})
                 .done((response) => {
                     if (response.success) {
@@ -263,17 +312,71 @@
                     } else {
                         this.showNotice('error', response.data || 'Cleanup failed');
                     }
+                })
+                .always(() => {
+                    this.setButtonState($button, 'normal');
                 });
         },
 
         /**
-         * Utility: AJAX wrapper
+         * 🔒 NOUVELLE MÉTHODE : Gestion des erreurs AJAX globales
+         */
+        handleAjaxError: function(event, xhr, settings, thrownError) {
+            this.log(`Global AJAX Error: ${settings.url} - ${xhr.status} ${thrownError}`, 'error');
+            
+            // Si c'est une erreur de sécurité, recharger la page
+            if (xhr.status === 403 || xhr.responseText.includes('nonce')) {
+                this.showNotice('error', 'Security error. Page will reload.', true);
+                setTimeout(() => window.location.reload(), 2000);
+            }
+            
+            // Si c'est une erreur serveur, proposer un retry
+            if (xhr.status >= 500) {
+                this.showNotice('error', 'Server error. Please try again.', false);
+            }
+        },
+
+        /**
+         * 🔒 NOUVELLES MÉTHODES : Gestion des requêtes actives
+         */
+        addActiveRequest: function(id, type = 'generic') {
+            const request = {
+                id: id,
+                type: type,
+                timestamp: Date.now()
+            };
+            this.config.activeRequests.add(request);
+            this.log(`Added active request: ${id} (${type})`);
+        },
+
+        removeActiveRequest: function(id) {
+            this.config.activeRequests.forEach(request => {
+                if (request.id === id) {
+                    this.config.activeRequests.delete(request);
+                    this.log(`Removed active request: ${id}`);
+                }
+            });
+        },
+
+        isRequestActive: function(type) {
+            let found = false;
+            this.config.activeRequests.forEach(request => {
+                if (request.type === type) {
+                    found = true;
+                }
+            });
+            return found;
+        },
+
+        /**
+         * Utility: AJAX wrapper with protection
          */
         ajax: function(action, data, options) {
             const defaults = {
                 url: window.nexusTranslator?.ajaxUrl || '/wp-admin/admin-ajax.php',
                 type: 'POST',
                 dataType: 'json',
+                timeout: 30000, // 🔒 PROTECTION : Timeout de 30s
                 data: $.extend({
                     action: action,
                     nonce: window.nexusTranslator?.nonce
@@ -287,11 +390,16 @@
             return $.ajax(settings)
                 .fail((xhr, status, error) => {
                     this.log(`AJAX Error: ${action} - ${status} ${error}`, 'error');
+                    
+                    // 🔒 PROTECTION : Gestion spécifique des erreurs
+                    if (status === 'timeout') {
+                        this.showNotice('error', 'Request timed out. Please try again.');
+                    }
                 });
         },
 
         /**
-         * Utility: Button state management
+         * Utility: Button state management - AMÉLIORÉ
          */
         setButtonState: function($button, state, text) {
             const originalText = $button.data('original-text') || $button.text();
@@ -300,17 +408,28 @@
                 $button.data('original-text', originalText);
             }
             
+            // 🔒 PROTECTION : Sauvegarder l'état précédent
+            $button.data('previous-state', $button.data('current-state') || 'normal');
+            $button.data('current-state', state);
+            
             switch (state) {
                 case 'loading':
-                    $button.prop('disabled', true).text(text || 'Loading...');
+                    $button.prop('disabled', true)
+                           .removeClass('button-success button-danger')
+                           .addClass('button-primary')
+                           .text(text || 'Loading...');
                     break;
                 case 'success':
-                    $button.removeClass('button-primary').addClass('button-success').text(text || 'Success');
-                    setTimeout(() => this.setButtonState($button, 'normal'), 2000);
+                    $button.prop('disabled', false)
+                           .removeClass('button-primary button-danger')
+                           .addClass('button-success')
+                           .text(text || 'Success');
                     break;
                 case 'error':
-                    $button.removeClass('button-primary').addClass('button-danger').text(text || 'Error');
-                    setTimeout(() => this.setButtonState($button, 'normal'), 3000);
+                    $button.prop('disabled', false)
+                           .removeClass('button-primary button-success')
+                           .addClass('button-danger')
+                           .text(text || 'Error');
                     break;
                 case 'normal':
                 default:
@@ -327,7 +446,10 @@
          */
         showResult: function($container, type, message, extra) {
             const typeClass = type === 'success' ? 'notice-success' : 'notice-error';
-            let html = `<div class="notice ${typeClass} inline"><p><strong>${type === 'success' ? 'Success!' : 'Error:'}</strong> ${message}</p>`;
+            const icon = type === 'success' ? '✅' : '❌';
+            
+            let html = `<div class="notice ${typeClass} inline">
+                <p><strong>${icon} ${type === 'success' ? 'Success!' : 'Error:'}</strong> ${message}</p>`;
             
             if (extra) {
                 html += `<p><small><strong>Test translation:</strong> ${extra}</small></p>`;
@@ -336,6 +458,13 @@
             html += '</div>';
             
             $container.html(html);
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    $container.fadeOut();
+                }, 5000);
+            }
         },
 
         /**
@@ -344,8 +473,11 @@
         showNotice: function(type, message, persistent) {
             const noticeClass = type === 'success' ? 'notice-success' : 'notice-error';
             const dismissible = persistent ? '' : 'is-dismissible';
+            const icon = type === 'success' ? '✅' : '❌';
             
-            const $notice = $(`<div class="notice ${noticeClass} ${dismissible}"><p>${message}</p></div>`);
+            const $notice = $(`<div class="notice ${noticeClass} ${dismissible}">
+                <p>${icon} ${message}</p>
+            </div>`);
             
             if ($('.wrap h1').length) {
                 $('.wrap h1').after($notice);
@@ -358,6 +490,23 @@
             }
             
             return $notice;
+        },
+
+        // Handle API key field changes to update button label dynamically
+        handleApiKeyChange: function(e) {
+            const $field = $(e.target);
+            const $button = $('#test-api-connection');
+            const currentValue = $field.val().trim();
+            const originalValue = $field.data('original-value') || '';
+            
+            // Update button label based on comparison
+            if (currentValue !== originalValue) {
+                this.setButtonState($button, 'normal', 'Save & Test');
+            } else if (originalValue === '') {
+                this.setButtonState($button, 'normal', 'Save & Test');
+            } else {
+                this.setButtonState($button, 'normal', 'Test Connection');
+            }
         },
 
         /**
@@ -392,17 +541,18 @@
             if (!this.config.debug && level !== 'error') return;
             
             const prefix = 'Nexus Translator:';
+            const timestamp = new Date().toISOString();
             
             switch (level) {
                 case 'error':
-                    console.error(prefix, message, data);
+                    console.error(`${prefix} [${timestamp}]`, message, data);
                     break;
                 case 'warn':
-                    console.warn(prefix, message, data);
+                    console.warn(`${prefix} [${timestamp}]`, message, data);
                     break;
                 case 'info':
                 default:
-                    console.log(prefix, message, data);
+                    console.log(`${prefix} [${timestamp}]`, message, data);
                     break;
             }
         },
@@ -421,23 +571,27 @@
             return !!this.config.modules[name];
         },
 
-        // Handle API key field changes to update button label dynamically
-        handleApiKeyChange: function(e) {
-            const $field = $(e.target);
-            const $button = $('#test-api-connection');
-            const currentValue = $field.val().trim();
-            const originalValue = $field.data('original-value') || '';
-            
-            // Update button label based on comparison
-            if (currentValue !== originalValue) {
-                $button.text('Save & Test');
-            } else if (originalValue === '') {
-                $button.text('Save & Test');
-            } else {
-                $button.text('Test Connection');
-            }
+        /**
+         * 🔒 MÉTHODES DE DIAGNOSTIC
+         */
+        getActiveRequests: function() {
+            return Array.from(this.config.activeRequests);
         },
 
+        forceCleanupRequests: function() {
+            this.config.activeRequests.clear();
+            this.log('Force cleanup of all active requests completed', 'warn');
+        },
+
+        getSystemStatus: function() {
+            return {
+                version: this.config.version,
+                debug: this.config.debug,
+                modulesLoaded: Object.keys(this.config.modules),
+                activeRequests: this.getActiveRequests().length,
+                screen: this.getCurrentScreen()
+            };
+        }
     };
 
     // Expose core to global scope
@@ -451,5 +605,14 @@
             });
         }
     });
+
+    // 🔒 PROTECTION : Exposer méthodes de diagnostic globalement
+    window.NexusTranslator.Debug = {
+        getStatus: () => NexusCore.getSystemStatus(),
+        getActiveRequests: () => NexusCore.getActiveRequests(),
+        forceCleanup: () => NexusCore.forceCleanupRequests(),
+        enableDebug: () => { NexusCore.config.debug = true; },
+        disableDebug: () => { NexusCore.config.debug = false; }
+    };
 
 })(jQuery, window);
