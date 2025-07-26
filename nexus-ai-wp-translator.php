@@ -39,7 +39,7 @@ define('NEXUS_TRANSLATOR_ADMIN_DIR', NEXUS_TRANSLATOR_PLUGIN_DIR . 'admin/');
 define('NEXUS_TRANSLATOR_PUBLIC_DIR', NEXUS_TRANSLATOR_PLUGIN_DIR . 'public/');
 
 /**
- * Main Plugin Class - Fixed Version
+ * Main Plugin Class - Enhanced Version with Modular AJAX
  */
 final class Nexus_AI_WP_Translator {
     
@@ -85,9 +85,9 @@ final class Nexus_AI_WP_Translator {
      * Initialize hooks
      */
     private function init_hooks() {
-        // Plugin activation/deactivation - FIXED METHOD NAME
+        // Plugin activation/deactivation
         register_activation_hook(__FILE__, array($this, 'activate'));
-        register_deactivation_hook(__FILE__, array($this, 'deactivate')); // FIXED: was 'deactivation'
+        register_deactivation_hook(__FILE__, array($this, 'deactivate'));
         
         // Initialize plugin
         add_action('plugins_loaded', array($this, 'init'), 10);
@@ -111,7 +111,7 @@ final class Nexus_AI_WP_Translator {
         }
         $init_called = true;
         
-        error_log('Nexus Translator: Starting initialization...');
+        error_log('Nexus Translator: Starting initialization with modular AJAX system...');
         
         // Check requirements
         if (!$this->check_requirements()) {
@@ -132,7 +132,7 @@ final class Nexus_AI_WP_Translator {
         // Plugin loaded action
         do_action('nexus_translator_loaded');
         
-        error_log('Nexus Translator: Plugin initialized successfully');
+        error_log('Nexus Translator: Plugin initialized successfully with modular AJAX system');
     }
     
     /**
@@ -161,7 +161,7 @@ final class Nexus_AI_WP_Translator {
     }
     
     /**
-     * Load includes - Fixed version without coordinator
+     * Load includes - UPDATED FOR MODULAR AJAX SYSTEM
      */
     private function load_includes() {
         // Core classes - Load in dependency order
@@ -183,11 +183,10 @@ final class Nexus_AI_WP_Translator {
             }
         }
         
-        // Admin classes
+        // Admin classes - UPDATED TO LOAD NEW MODULAR AJAX SYSTEM
         if (is_admin()) {
             $admin_classes = array(
-                'class-translator-admin.php',
-                'class-translator-ajax.php'
+                'class-translator-admin.php'
             );
             
             foreach ($admin_classes as $class_file) {
@@ -199,13 +198,56 @@ final class Nexus_AI_WP_Translator {
                     error_log("Nexus Translator: MISSING admin file: {$class_file}");
                 }
             }
+            
+            // Load NEW MODULAR AJAX SYSTEM
+            $this->load_modular_ajax_system();
         }
         
-        error_log('Nexus Translator: All includes loaded successfully');
+        error_log('Nexus Translator: All includes loaded successfully with modular AJAX');
     }
     
     /**
-     * Initialize components - Fixed version
+     * Load the new modular AJAX system
+     */
+    private function load_modular_ajax_system() {
+        $ajax_base_file = NEXUS_TRANSLATOR_INCLUDES_DIR . 'ajax/class-ajax-base.php';
+        
+        if (file_exists($ajax_base_file)) {
+            require_once $ajax_base_file;
+            error_log('Nexus Translator: AJAX base class loaded');
+            
+            // Load modular AJAX handlers
+            $ajax_handlers = array(
+                'ajax/class-ajax-translation.php',
+                'ajax/class-ajax-admin.php',
+                'ajax/class-ajax-analytics.php'
+            );
+            
+            foreach ($ajax_handlers as $handler_file) {
+                $file_path = NEXUS_TRANSLATOR_INCLUDES_DIR . $handler_file;
+                if (file_exists($file_path)) {
+                    require_once $file_path;
+                    error_log("Nexus Translator: Loaded AJAX handler: {$handler_file}");
+                } else {
+                    error_log("Nexus Translator: MISSING AJAX handler: {$handler_file}");
+                }
+            }
+            
+            // Load AJAX coordinator last
+            $coordinator_file = NEXUS_TRANSLATOR_INCLUDES_DIR . 'class-translator-ajax-coordinator.php';
+            if (file_exists($coordinator_file)) {
+                require_once $coordinator_file;
+                error_log('Nexus Translator: AJAX coordinator loaded');
+            } else {
+                error_log('Nexus Translator: MISSING AJAX coordinator');
+            }
+        } else {
+            error_log('Nexus Translator: CRITICAL - AJAX base class not found');
+        }
+    }
+    
+    /**
+     * Initialize components - UPDATED FOR MODULAR AJAX
      */
     private function init_components() {
         try {
@@ -226,11 +268,12 @@ final class Nexus_AI_WP_Translator {
                     error_log('Nexus Translator: WARNING - Translator_Admin class not found');
                 }
                 
-                if (class_exists('Translator_AJAX')) {
-                    $this->components['ajax'] = new Translator_AJAX();
-                    error_log('Nexus Translator: AJAX component loaded');
+                // Initialize NEW MODULAR AJAX COORDINATOR
+                if (class_exists('Translator_AJAX_Coordinator')) {
+                    $this->components['ajax_coordinator'] = new Translator_AJAX_Coordinator();
+                    error_log('Nexus Translator: Modular AJAX coordinator loaded');
                 } else {
-                    error_log('Nexus Translator: WARNING - Translator_AJAX class not found');
+                    error_log('Nexus Translator: WARNING - Translator_AJAX_Coordinator class not found');
                 }
             }
             
@@ -286,7 +329,7 @@ final class Nexus_AI_WP_Translator {
     }
     
     /**
-     * Plugin deactivation - FIXED METHOD NAME
+     * Plugin deactivation
      */
     public function deactivate() {
         error_log('Nexus Translator: Starting deactivation process');
@@ -307,6 +350,11 @@ final class Nexus_AI_WP_Translator {
         delete_option('nexus_translator_emergency_stop');
         delete_option('nexus_translator_emergency_reason');
         delete_option('nexus_translator_emergency_time');
+        
+        // Force cleanup AJAX system
+        if (class_exists('Ajax_Base')) {
+            Ajax_Base::force_cleanup_requests();
+        }
         
         // Flush rewrite rules
         flush_rewrite_rules();
@@ -506,6 +554,11 @@ final class Nexus_AI_WP_Translator {
      * Get system status for debugging
      */
     public function get_system_status() {
+        $ajax_status = array();
+        if (class_exists('Ajax_Base')) {
+            $ajax_status = Ajax_Base::get_system_status();
+        }
+        
         return array(
             'version' => NEXUS_TRANSLATOR_VERSION,
             'php_version' => PHP_VERSION,
@@ -513,6 +566,7 @@ final class Nexus_AI_WP_Translator {
             'components_loaded' => array_keys($this->components),
             'debug_mode' => $this->is_debug_mode(),
             'initialized' => self::$initialized,
+            'ajax_system' => $ajax_status,
             'scheduled_events' => array(
                 'cleanup_analytics' => wp_next_scheduled('nexus_translator_cleanup_analytics'),
                 'bulk_translation' => wp_next_scheduled('nexus_process_bulk_translation')
@@ -596,6 +650,11 @@ if (!function_exists('nexus_translator_uninstall')) {
         // Clear scheduled events
         wp_clear_scheduled_hook('nexus_translator_cleanup_analytics');
         wp_clear_scheduled_hook('nexus_process_bulk_translation');
+        
+        // Force cleanup AJAX system
+        if (class_exists('Ajax_Base')) {
+            Ajax_Base::force_cleanup_requests();
+        }
         
         // Remove plugin options
         $options_to_remove = array(
