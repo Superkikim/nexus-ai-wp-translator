@@ -7,7 +7,6 @@
  * Responsible for: Settings page, forms, validation, options, system status
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -25,14 +24,12 @@ if (!defined('ABSPATH')) {
  * Handles WordPress admin settings page, form processing, validation,
  * options management, and system status display.
  * 
- * @since 0.0.1
  */
 class Admin extends Abstract_Module {
     
     /**
      * Settings page hook suffix
      * 
-     * @since 0.0.1
      * @var string
      */
     private $page_hook;
@@ -40,7 +37,6 @@ class Admin extends Abstract_Module {
     /**
      * API instance for connection testing
      * 
-     * @since 0.0.1
      * @var Api
      */
     private $api;
@@ -48,7 +44,6 @@ class Admin extends Abstract_Module {
     /**
      * Languages instance for validation
      * 
-     * @since 0.0.1
      * @var Languages
      */
     private $languages;
@@ -56,7 +51,6 @@ class Admin extends Abstract_Module {
     /**
      * Plugin settings
      * 
-     * @since 0.0.1
      * @var array
      */
     private $settings = array();
@@ -64,7 +58,6 @@ class Admin extends Abstract_Module {
     /**
      * System status cache
      * 
-     * @since 0.0.1
      * @var array
      */
     private $system_status = array();
@@ -72,7 +65,6 @@ class Admin extends Abstract_Module {
     /**
      * Get module name/identifier
      * 
-     * @since 0.0.1
      * @return string Module name
      */
     protected function get_module_name() {
@@ -82,7 +74,6 @@ class Admin extends Abstract_Module {
     /**
      * Module-specific initialization
      * 
-     * @since 0.0.1
      * @return void
      */
     protected function module_init() {
@@ -101,7 +92,6 @@ class Admin extends Abstract_Module {
     /**
      * Register WordPress hooks
      * 
-     * @since 0.0.1
      * @return void
      */
     protected function register_hooks() {
@@ -126,7 +116,6 @@ class Admin extends Abstract_Module {
     /**
      * Load plugin settings
      * 
-     * @since 0.0.1
      * @return void
      */
     private function load_settings() {
@@ -147,7 +136,6 @@ class Admin extends Abstract_Module {
     /**
      * Initialize system status
      * 
-     * @since 0.0.1
      * @return void
      */
     private function init_system_status() {
@@ -166,7 +154,6 @@ class Admin extends Abstract_Module {
     /**
      * Add admin menu
      * 
-     * @since 0.0.1
      * @return void
      */
     public function add_admin_menu() {
@@ -185,7 +172,6 @@ class Admin extends Abstract_Module {
     /**
      * Register plugin settings
      * 
-     * @since 0.0.1
      * @return void
      */
     public function register_settings() {
@@ -298,7 +284,6 @@ class Admin extends Abstract_Module {
     /**
      * Sanitize settings before saving
      * 
-     * @since 0.0.1
      * @param array $input Raw input settings
      * @return array Sanitized settings
      */
@@ -362,7 +347,6 @@ class Admin extends Abstract_Module {
     /**
      * Render settings page
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_settings_page() {
@@ -405,7 +389,6 @@ class Admin extends Abstract_Module {
     /**
      * Render status cards
      * 
-     * @since 0.0.1
      * @return void
      */
     private function render_status_cards() {
@@ -455,7 +438,6 @@ class Admin extends Abstract_Module {
     /**
      * Show admin notices
      * 
-     * @since 0.0.1
      * @return void
      */
     public function show_admin_notices() {
@@ -496,7 +478,6 @@ class Admin extends Abstract_Module {
     /**
      * Enqueue admin assets
      * 
-     * @since 0.0.1
      * @param string $hook_suffix Current page hook suffix
      * @return void
      */
@@ -543,7 +524,6 @@ class Admin extends Abstract_Module {
     /**
      * Add help tabs
      * 
-     * @since 0.0.1
      * @return void
      */
     public function add_help_tabs() {
@@ -577,7 +557,6 @@ class Admin extends Abstract_Module {
     /**
      * AJAX: Test API connection
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_test_connection() {
@@ -620,7 +599,6 @@ class Admin extends Abstract_Module {
     /**
      * AJAX: Get system status
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_get_system_status() {
@@ -643,7 +621,6 @@ class Admin extends Abstract_Module {
     /**
      * AJAX: Reset settings
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_reset_settings() {
@@ -684,7 +661,6 @@ class Admin extends Abstract_Module {
     /**
      * Test API connection
      * 
-     * @since 0.0.1
      * @param string $api_key API key to test
      * @return void
      */
@@ -723,7 +699,6 @@ class Admin extends Abstract_Module {
     /**
      * Update system status
      * 
-     * @since 0.0.1
      * @return void
      */
     private function update_system_status() {
@@ -757,7 +732,6 @@ class Admin extends Abstract_Module {
     /**
      * Get API help content
      * 
-     * @since 0.0.1
      * @return string Help content
      */
     private function get_api_help_content() {
@@ -775,7 +749,6 @@ class Admin extends Abstract_Module {
     /**
      * Get languages help content
      * 
-     * @since 0.0.1
      * @return string Help content
      */
     private function get_languages_help_content() {
@@ -791,7 +764,6 @@ class Admin extends Abstract_Module {
     /**
      * Get troubleshooting help content
      * 
-     * @since 0.0.1
      * @return string Help content
      */
     private function get_troubleshooting_help_content() {
@@ -807,7 +779,6 @@ class Admin extends Abstract_Module {
     /**
      * Get help sidebar content
      * 
-     * @since 0.0.1
      * @return string Sidebar content
      */
     private function get_help_sidebar_content() {
@@ -819,7 +790,6 @@ class Admin extends Abstract_Module {
     /**
      * Get current settings
      * 
-     * @since 0.0.1
      * @return array Current settings
      */
     public function get_settings() {
@@ -829,7 +799,6 @@ class Admin extends Abstract_Module {
     /**
      * Get system status
      * 
-     * @since 0.0.1
      * @return array System status
      */
     public function get_system_status() {
@@ -839,7 +808,6 @@ class Admin extends Abstract_Module {
     /**
      * Get settings page hook
      * 
-     * @since 0.0.1
      * @return string Page hook
      */
     public function get_page_hook() {
@@ -855,7 +823,6 @@ class Admin extends Abstract_Module {
     /**
      * Render sidebar
      * 
-     * @since 0.0.1
      * @return void
      */
     private function render_sidebar() {
@@ -912,7 +879,6 @@ class Admin extends Abstract_Module {
     /**
      * Render API section
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_api_section() {
@@ -924,7 +890,6 @@ class Admin extends Abstract_Module {
     /**
      * Render API key field
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_api_key_field() {
@@ -955,7 +920,6 @@ class Admin extends Abstract_Module {
     /**
      * Render language section
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_language_section() {
@@ -967,7 +931,6 @@ class Admin extends Abstract_Module {
     /**
      * Render source language field
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_source_language_field() {
@@ -990,7 +953,6 @@ class Admin extends Abstract_Module {
     /**
      * Render target languages field
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_target_languages_field() {
@@ -1019,7 +981,6 @@ class Admin extends Abstract_Module {
     /**
      * Render options section
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_options_section() {
@@ -1031,7 +992,6 @@ class Admin extends Abstract_Module {
     /**
      * Render auto translate field
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_auto_translate_field() {
@@ -1054,7 +1014,6 @@ class Admin extends Abstract_Module {
     /**
      * Render quality field
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_quality_field() {
@@ -1081,7 +1040,6 @@ class Admin extends Abstract_Module {
     /**
      * Render advanced section
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_advanced_section() {
@@ -1093,7 +1051,6 @@ class Admin extends Abstract_Module {
     /**
      * Render analytics field
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_analytics_field() {
@@ -1116,7 +1073,6 @@ class Admin extends Abstract_Module {
     /**
      * Render emergency field
      * 
-     * @since 0.0.1
      * @return void
      */
     public function render_emergency_field() {

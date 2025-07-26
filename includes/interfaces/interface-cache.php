@@ -20,7 +20,6 @@ if (!defined('ABSPATH')) {
  * Contract for cache implementations
  * Defines methods for storing, retrieving, and managing cached data
  * 
- * @since 0.0.1
  * @package Nexus\Translator\Interfaces
  */
 interface Cache_Interface {

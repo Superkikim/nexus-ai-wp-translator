@@ -7,7 +7,6 @@
  * Responsible for: Loading components, initializing instances, module registry
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * Handles the loading, initialization, and management of all plugin components
  * including future extensibility through module registration.
  * 
- * @since 0.0.1
  */
 class Component_Loader {
     
     /**
      * Component registry for loaded modules
      * 
-     * @since 0.0.1
      * @var array
      */
     private $components = array();
@@ -38,7 +35,6 @@ class Component_Loader {
     /**
      * Module registry for extensibility
      * 
-     * @since 0.0.1
      * @var array
      */
     private $modules = array();
@@ -46,7 +42,6 @@ class Component_Loader {
     /**
      * Constructor
      * 
-     * @since 0.0.1
      */
     public function __construct() {
         // Load dependencies first
@@ -56,7 +51,6 @@ class Component_Loader {
     /**
      * Load plugin dependencies
      * 
-     * @since 0.0.1
      */
     private function load_dependencies() {
         // Load abstract classes first
@@ -72,7 +66,6 @@ class Component_Loader {
     /**
      * Load all core components
      * 
-     * @since 0.0.1
      */
     public function load_all() {
         // Component loading order is important
@@ -98,7 +91,6 @@ class Component_Loader {
     /**
      * Initialize all loaded components
      * 
-     * @since 0.0.1
      */
     public function init_all() {
         foreach ($this->components as $component => $data) {
@@ -112,7 +104,6 @@ class Component_Loader {
     /**
      * Load a single file from includes directory
      * 
-     * @since 0.0.1
      * @param string $file File path relative to includes directory
      * @return bool True on success, false on failure
      */
@@ -135,7 +126,6 @@ class Component_Loader {
     /**
      * Initialize a single component
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @param array $data Component data
      */
@@ -167,7 +157,6 @@ class Component_Loader {
     /**
      * Get component class name from component key
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @return string Full class name
      */
@@ -180,7 +169,6 @@ class Component_Loader {
     /**
      * Register a component in the registry
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @param string $file Component file
      */
@@ -195,7 +183,6 @@ class Component_Loader {
     /**
      * Register a module for extensibility
      * 
-     * @since 0.0.1
      * @param string $module_name Module name
      * @param array $module_data Module configuration
      * @return bool True on success, false on failure
@@ -222,7 +209,6 @@ class Component_Loader {
     /**
      * Get a component instance
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @return object|null Component instance or null if not found
      */
@@ -237,7 +223,6 @@ class Component_Loader {
     /**
      * Get all loaded components
      * 
-     * @since 0.0.1
      * @return array Array of loaded components
      */
     public function get_all_components() {
@@ -247,7 +232,6 @@ class Component_Loader {
     /**
      * Get all registered modules
      * 
-     * @since 0.0.1
      * @return array Array of registered modules
      */
     public function get_all_modules() {
@@ -257,7 +241,6 @@ class Component_Loader {
     /**
      * Check if component is loaded
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @return bool True if loaded, false otherwise
      */
@@ -268,7 +251,6 @@ class Component_Loader {
     /**
      * Check if component is initialized
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @return bool True if initialized, false otherwise
      */
@@ -280,7 +262,6 @@ class Component_Loader {
     /**
      * Load external module from file
      * 
-     * @since 0.0.1
      * @param string $module_file Full path to module file
      * @param string $module_name Module name for registration
      * @return bool True on success, false on failure
@@ -311,7 +292,6 @@ class Component_Loader {
     /**
      * Unload a component
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @return bool True on success, false on failure
      */
@@ -339,7 +319,6 @@ class Component_Loader {
     /**
      * Get component loading statistics
      * 
-     * @since 0.0.1
      * @return array Loading statistics
      */
     public function get_loading_stats() {
@@ -366,7 +345,6 @@ class Component_Loader {
     /**
      * Log error message
      * 
-     * @since 0.0.1
      * @param string $message Error message
      * @param Exception $exception Optional exception object
      */

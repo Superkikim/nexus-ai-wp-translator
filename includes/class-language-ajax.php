@@ -7,7 +7,6 @@
  * Responsible for: AJAX endpoints, admin interactions, real-time validation
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * Handles all AJAX endpoints for language operations, real-time validation,
  * and admin interface interactions.
  * 
- * @since 0.0.1
  */
 class Language_Ajax {
     
     /**
      * Languages instance reference
      * 
-     * @since 0.0.1
      * @var Languages
      */
     private $languages;
@@ -38,7 +35,6 @@ class Language_Ajax {
     /**
      * Constructor
      * 
-     * @since 0.0.1
      * @param Languages $languages Languages instance
      */
     public function __construct($languages) {
@@ -48,7 +44,6 @@ class Language_Ajax {
     /**
      * Register WordPress hooks
      * 
-     * @since 0.0.1
      * @return void
      */
     public function register_hooks() {
@@ -67,7 +62,6 @@ class Language_Ajax {
     /**
      * AJAX handler for language pair validation
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_validate_language_pair() {
@@ -131,7 +125,6 @@ class Language_Ajax {
     /**
      * AJAX handler for language information
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_get_language_info() {
@@ -181,7 +174,6 @@ class Language_Ajax {
     /**
      * AJAX handler for available target languages
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_get_available_targets() {
@@ -229,7 +221,6 @@ class Language_Ajax {
     /**
      * AJAX handler for language settings validation
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_validate_language_settings() {
@@ -284,7 +275,6 @@ class Language_Ajax {
     /**
      * AJAX handler for language dropdown options
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_get_language_dropdown() {
@@ -316,7 +306,6 @@ class Language_Ajax {
     /**
      * AJAX handler for pair complexity check
      * 
-     * @since 0.0.1
      * @return void
      */
     public function ajax_check_pair_complexity() {
@@ -374,7 +363,6 @@ class Language_Ajax {
     /**
      * Enqueue admin scripts and styles
      * 
-     * @since 0.0.1
      * @param string $hook_suffix Current admin page hook suffix
      * @return void
      */
@@ -422,7 +410,6 @@ class Language_Ajax {
     /**
      * Verify AJAX nonce
      * 
-     * @since 0.0.1
      * @param string $action Nonce action
      * @return bool True if valid
      */
@@ -434,7 +421,6 @@ class Language_Ajax {
     /**
      * Send standardized AJAX error response
      * 
-     * @since 0.0.1
      * @param string $message Error message
      * @param string $code Error code
      * @param array $data Additional data
@@ -453,7 +439,6 @@ class Language_Ajax {
     /**
      * Send standardized AJAX success response
      * 
-     * @since 0.0.1
      * @param array $data Response data
      * @param string $message Success message
      * @return void
@@ -474,7 +459,6 @@ class Language_Ajax {
     /**
      * Log AJAX request for analytics
      * 
-     * @since 0.0.1
      * @param string $endpoint Endpoint name
      * @param array $request_data Request data
      * @param bool $success Whether request was successful
@@ -499,7 +483,6 @@ class Language_Ajax {
     /**
      * Get formatted error message for user display
      * 
-     * @since 0.0.1
      * @param string $error_code Error code
      * @param array $context Error context
      * @return string Formatted error message
@@ -542,7 +525,6 @@ class Language_Ajax {
     /**
      * Handle AJAX request with error logging
      * 
-     * @since 0.0.1
      * @param string $endpoint Endpoint name
      * @param callable $callback Callback function
      * @return void
@@ -590,7 +572,6 @@ class Language_Ajax {
     /**
      * Get AJAX endpoint statistics
      * 
-     * @since 0.0.1
      * @return array Endpoint usage statistics
      */
     public function get_ajax_stats() {
@@ -639,7 +620,6 @@ class Language_Ajax {
     /**
      * Clear AJAX analytics data
      * 
-     * @since 0.0.1
      * @return bool True on success
      */
     public function clear_ajax_analytics() {
@@ -653,7 +633,6 @@ class Language_Ajax {
     /**
      * Test AJAX endpoint connectivity
      * 
-     * @since 0.0.1
      * @return array Test results
      */
     public function test_ajax_connectivity() {

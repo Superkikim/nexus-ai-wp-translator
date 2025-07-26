@@ -20,7 +20,6 @@ if (!defined('ABSPATH')) {
  * Contract for analytics implementations
  * Defines methods for tracking events, metrics, and generating reports
  * 
- * @since 0.0.1
  * @package Nexus\Translator\Interfaces
  */
 interface Analytics_Interface {

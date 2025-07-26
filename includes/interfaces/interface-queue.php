@@ -20,7 +20,6 @@ if (!defined('ABSPATH')) {
  * Contract for queue implementations
  * Defines methods for managing background jobs, bulk operations, and task processing
  * 
- * @since 0.0.1
  * @package Nexus\Translator\Interfaces
  */
 interface Queue_Interface {

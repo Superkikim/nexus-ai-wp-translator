@@ -7,7 +7,6 @@
  * Responsible for: Language validation rules, settings validation, error handling
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * Handles all validation logic for languages, pairs, settings, and configuration.
  * Provides comprehensive validation rules and error reporting.
  * 
- * @since 0.0.1
  */
 class Language_Validator {
     
     /**
      * Languages instance reference
      * 
-     * @since 0.0.1
      * @var Languages
      */
     private $languages;
@@ -38,7 +35,6 @@ class Language_Validator {
     /**
      * Validation rules registry
      * 
-     * @since 0.0.1
      * @var array
      */
     private $validation_rules = array();
@@ -46,7 +42,6 @@ class Language_Validator {
     /**
      * Current validation errors
      * 
-     * @since 0.0.1
      * @var array
      */
     private $validation_errors = array();
@@ -54,7 +49,6 @@ class Language_Validator {
     /**
      * Constructor
      * 
-     * @since 0.0.1
      * @param Languages $languages Languages instance
      */
     public function __construct($languages) {
@@ -65,7 +59,6 @@ class Language_Validator {
     /**
      * Initialize validation rules
      * 
-     * @since 0.0.1
      * @return void
      */
     private function init_validation_rules() {
@@ -118,7 +111,6 @@ class Language_Validator {
     /**
      * Validate language code format
      * 
-     * @since 0.0.1
      * @param string $language_code Language code to validate
      * @return bool True if valid
      */
@@ -151,7 +143,6 @@ class Language_Validator {
     /**
      * Validate language pair
      * 
-     * @since 0.0.1
      * @param string $source_code Source language code
      * @param string $target_code Target language code
      * @return array Validation result
@@ -218,7 +209,6 @@ class Language_Validator {
     /**
      * Validate plugin settings
      * 
-     * @since 0.0.1
      * @param array $settings Settings to validate
      * @return array Validation result
      */
@@ -302,7 +292,6 @@ class Language_Validator {
     /**
      * Validate current plugin settings
      * 
-     * @since 0.0.1
      * @return void
      */
     public function validate_current_settings() {
@@ -334,7 +323,6 @@ class Language_Validator {
     /**
      * Validate language configuration data
      * 
-     * @since 0.0.1
      * @param array $config Language configuration
      * @return array Validation result
      */
@@ -382,7 +370,6 @@ class Language_Validator {
     /**
      * Get validation errors
      * 
-     * @since 0.0.1
      * @return array Validation errors
      */
     public function get_validation_errors() {
@@ -392,7 +379,6 @@ class Language_Validator {
     /**
      * Get validation warnings
      * 
-     * @since 0.0.1
      * @return array Validation warnings
      */
     public function get_warnings() {
@@ -402,7 +388,6 @@ class Language_Validator {
     /**
      * Check if last validation was successful
      * 
-     * @since 0.0.1
      * @return bool True if valid
      */
     public function is_valid() {
@@ -412,7 +397,6 @@ class Language_Validator {
     /**
      * Get validation rule by name
      * 
-     * @since 0.0.1
      * @param string $rule_name Rule name
      * @return array|false Rule data or false if not found
      */
@@ -423,7 +407,6 @@ class Language_Validator {
     /**
      * Add custom validation rule
      * 
-     * @since 0.0.1
      * @param string $rule_name Rule name
      * @param array $rule_config Rule configuration
      * @return void
@@ -435,7 +418,6 @@ class Language_Validator {
     /**
      * Clear validation errors
      * 
-     * @since 0.0.1
      * @return void
      */
     private function clear_errors() {
@@ -446,7 +428,6 @@ class Language_Validator {
     /**
      * Add validation error
      * 
-     * @since 0.0.1
      * @param string $field Field name
      * @param string $message Error message
      * @return void
@@ -458,7 +439,6 @@ class Language_Validator {
     /**
      * Add validation warning
      * 
-     * @since 0.0.1
      * @param string $field Field name
      * @param string $message Warning message
      * @return void
@@ -472,7 +452,6 @@ class Language_Validator {
     /**
      * Detect changes between original and cleaned settings
      * 
-     * @since 0.0.1
      * @param array $original Original settings
      * @param array $cleaned Cleaned settings
      * @return array Changes detected
@@ -495,7 +474,6 @@ class Language_Validator {
     /**
      * Add admin notices for settings changes
      * 
-     * @since 0.0.1
      * @param array $validation Validation result
      * @return void
      */
@@ -525,7 +503,6 @@ class Language_Validator {
     /**
      * Helper: Get option value (temporary storage for warnings)
      * 
-     * @since 0.0.1
      * @param string $key Option key
      * @param mixed $default Default value
      * @return mixed Option value
@@ -538,7 +515,6 @@ class Language_Validator {
     /**
      * Helper: Set option value (temporary storage for warnings)
      * 
-     * @since 0.0.1
      * @param string $key Option key
      * @param mixed $value Option value
      * @return void

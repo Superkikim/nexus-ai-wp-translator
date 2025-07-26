@@ -21,7 +21,6 @@ if (!defined('ABSPATH')) {
  * Provides common functionality like initialization, configuration, 
  * error handling, and hook management
  * 
- * @since 0.0.1
  * @package Nexus\Translator\Abstracts
  */
 abstract class Abstract_Module {

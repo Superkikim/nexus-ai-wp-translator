@@ -20,7 +20,6 @@ if (!defined('ABSPATH')) {
  * Base class for handlers that process requests, events, or data
  * Provides validation, sanitization, response handling, and error management
  * 
- * @since 0.0.1
  * @package Nexus\Translator\Abstracts
  */
 abstract class Abstract_Handler {

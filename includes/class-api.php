@@ -7,7 +7,6 @@
  * Responsible for: Basic API communication, authentication, simple requests
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -25,14 +24,12 @@ if (!defined('ABSPATH')) {
  * Handles basic Claude AI communication - authentication and simple API calls.
  * Complex error handling and performance features are in separate classes.
  * 
- * @since 0.0.1
  */
 class Api extends Abstract_Module {
     
     /**
      * Claude API base URL
      * 
-     * @since 0.0.1
      * @var string
      */
     private $api_base_url = 'https://api.anthropic.com/v1/messages';
@@ -40,7 +37,6 @@ class Api extends Abstract_Module {
     /**
      * API key for authentication
      * 
-     * @since 0.0.1
      * @var string
      */
     private $api_key = '';
@@ -48,7 +44,6 @@ class Api extends Abstract_Module {
     /**
      * Languages instance for validation
      * 
-     * @since 0.0.1
      * @var Languages
      */
     private $languages;
@@ -56,7 +51,6 @@ class Api extends Abstract_Module {
     /**
      * API handler for complex operations
      * 
-     * @since 0.0.1
      * @var Api_Handler
      */
     private $handler;
@@ -64,7 +58,6 @@ class Api extends Abstract_Module {
     /**
      * Performance tracker
      * 
-     * @since 0.0.1
      * @var Api_Performance
      */
     private $performance;
@@ -72,7 +65,6 @@ class Api extends Abstract_Module {
     /**
      * Get module name/identifier
      * 
-     * @since 0.0.1
      * @return string Module name
      */
     protected function get_module_name() {
@@ -82,7 +74,6 @@ class Api extends Abstract_Module {
     /**
      * Module-specific initialization
      * 
-     * @since 0.0.1
      * @return void
      */
     protected function module_init() {
@@ -103,7 +94,6 @@ class Api extends Abstract_Module {
     /**
      * Register WordPress hooks
      * 
-     * @since 0.0.1
      * @return void
      */
     protected function register_hooks() {
@@ -123,7 +113,6 @@ class Api extends Abstract_Module {
     /**
      * Load helper class files
      * 
-     * @since 0.0.1
      * @return void
      */
     private function load_helper_classes() {
@@ -143,7 +132,6 @@ class Api extends Abstract_Module {
     /**
      * Initialize helper components
      * 
-     * @since 0.0.1
      * @return void
      */
     private function init_helper_components() {
@@ -161,7 +149,6 @@ class Api extends Abstract_Module {
     /**
      * Load API configuration from database
      * 
-     * @since 0.0.1
      * @return void
      */
     private function load_api_config() {
@@ -181,7 +168,6 @@ class Api extends Abstract_Module {
     /**
      * Authenticate with Claude API
      * 
-     * @since 0.0.1
      * @param string $api_key Optional API key to test
      * @return array Authentication result
      */
@@ -238,7 +224,6 @@ class Api extends Abstract_Module {
     /**
      * Translate text using Claude AI
      * 
-     * @since 0.0.1
      * @param string $text Text to translate
      * @param string $source_language Source language code
      * @param string $target_language Target language code
@@ -258,7 +243,6 @@ class Api extends Abstract_Module {
     /**
      * Basic translation without advanced features
      * 
-     * @since 0.0.1
      * @param string $text Text to translate
      * @param string $source_language Source language
      * @param string $target_language Target language
@@ -308,7 +292,6 @@ class Api extends Abstract_Module {
     /**
      * Test API connection
      * 
-     * @since 0.0.1
      * @return array Connection test result
      */
     public function test_connection() {
@@ -325,7 +308,6 @@ class Api extends Abstract_Module {
     /**
      * Make basic API request
      * 
-     * @since 0.0.1
      * @param array $data Request data
      * @param string $api_key Optional API key override
      * @return array API response
@@ -395,7 +377,6 @@ class Api extends Abstract_Module {
     /**
      * Build translation prompt
      * 
-     * @since 0.0.1
      * @param string $text Text to translate
      * @param string $source_lang Source language
      * @param string $target_lang Target language
@@ -429,7 +410,6 @@ class Api extends Abstract_Module {
     /**
      * Extract translation from API response
      * 
-     * @since 0.0.1
      * @param array $response_data API response
      * @return string Translated text
      */
@@ -444,7 +424,6 @@ class Api extends Abstract_Module {
     /**
      * Create success response
      * 
-     * @since 0.0.1
      * @param array $data Response data
      * @param string $message Success message
      * @return array Success response
@@ -461,7 +440,6 @@ class Api extends Abstract_Module {
     /**
      * Create error response
      * 
-     * @since 0.0.1
      * @param string $message Error message
      * @param string $code Error code
      * @return array Error response
@@ -478,7 +456,6 @@ class Api extends Abstract_Module {
     /**
      * Get API key
      * 
-     * @since 0.0.1
      * @return string API key
      */
     public function get_api_key() {
@@ -488,7 +465,6 @@ class Api extends Abstract_Module {
     /**
      * Get handler instance
      * 
-     * @since 0.0.1
      * @return Api_Handler|null Handler instance
      */
     public function get_handler() {
@@ -498,7 +474,6 @@ class Api extends Abstract_Module {
     /**
      * Get performance instance
      * 
-     * @since 0.0.1
      * @return Api_Performance|null Performance instance
      */
     public function get_performance() {
@@ -508,7 +483,6 @@ class Api extends Abstract_Module {
     /**
      * Admin initialization
      * 
-     * @since 0.0.1
      * @return void
      */
     public function admin_init() {

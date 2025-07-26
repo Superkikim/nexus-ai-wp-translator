@@ -7,7 +7,6 @@
  * Responsible for: Performance tracking, metrics collection, cost estimation, optimization
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * Handles performance metrics, cost estimation, optimization recommendations,
  * and integration with analytics systems.
  * 
- * @since 0.0.1
  */
 class Api_Performance {
     
     /**
      * Core API instance
      * 
-     * @since 0.0.1
      * @var Api
      */
     private $api;
@@ -38,7 +35,6 @@ class Api_Performance {
     /**
      * Languages instance
      * 
-     * @since 0.0.1
      * @var Languages
      */
     private $languages;
@@ -46,7 +42,6 @@ class Api_Performance {
     /**
      * Performance metrics cache
      * 
-     * @since 0.0.1
      * @var array
      */
     private $metrics_cache = array();
@@ -54,7 +49,6 @@ class Api_Performance {
     /**
      * API status data
      * 
-     * @since 0.0.1
      * @var array
      */
     private $api_status = array();
@@ -62,7 +56,6 @@ class Api_Performance {
     /**
      * Constructor
      * 
-     * @since 0.0.1
      * @param Api $api Core API instance
      */
     public function __construct($api) {
@@ -79,7 +72,6 @@ class Api_Performance {
     /**
      * Register WordPress hooks
      * 
-     * @since 0.0.1
      * @return void
      */
     public function register_hooks() {
@@ -97,7 +89,6 @@ class Api_Performance {
     /**
      * Initialize API status tracking
      * 
-     * @since 0.0.1
      * @return void
      */
     private function init_api_status() {
@@ -115,7 +106,6 @@ class Api_Performance {
     /**
      * Track translation performance
      * 
-     * @since 0.0.1
      * @param array $result Translation result
      * @param string $text Original text
      * @param string $source_lang Source language
@@ -187,7 +177,6 @@ class Api_Performance {
     /**
      * Handle analytics events
      * 
-     * @since 0.0.1
      * @param string $event_name Event name
      * @param array $event_data Event data
      * @return void
@@ -220,7 +209,6 @@ class Api_Performance {
     /**
      * Get performance metrics
      * 
-     * @since 0.0.1
      * @param string $language_pair Optional language pair filter
      * @return array Performance metrics
      */
@@ -235,7 +223,6 @@ class Api_Performance {
     /**
      * Get API status
      * 
-     * @since 0.0.1
      * @return array API status information
      */
     public function get_api_status() {
@@ -245,7 +232,6 @@ class Api_Performance {
     /**
      * Update API status
      * 
-     * @since 0.0.1
      * @return void
      */
     public function update_api_status() {
@@ -255,7 +241,6 @@ class Api_Performance {
     /**
      * Get usage statistics
      * 
-     * @since 0.0.1
      * @param string $period Time period ('hour', 'day', 'week', 'month')
      * @return array Usage statistics
      */
@@ -294,7 +279,6 @@ class Api_Performance {
     /**
      * Estimate translation cost
      * 
-     * @since 0.0.1
      * @param string $text Text to translate
      * @param string $model Model to use
      * @return array Cost estimation
@@ -331,7 +315,6 @@ class Api_Performance {
     /**
      * Get recommended model for language pair
      * 
-     * @since 0.0.1
      * @param string $source_lang Source language
      * @param string $target_lang Target language
      * @return string Recommended model
@@ -362,7 +345,6 @@ class Api_Performance {
     /**
      * Test available models
      * 
-     * @since 0.0.1
      * @return array Model test results
      */
     public function test_models() {
@@ -406,7 +388,6 @@ class Api_Performance {
     /**
      * Daily health check
      * 
-     * @since 0.0.1
      * @return void
      */
     public function daily_health_check() {
@@ -446,7 +427,6 @@ class Api_Performance {
     /**
      * Clean up old metrics
      * 
-     * @since 0.0.1
      * @return void
      */
     private function cleanup_old_metrics() {
@@ -466,7 +446,6 @@ class Api_Performance {
     /**
      * Export performance logs
      * 
-     * @since 0.0.1
      * @param array $filters Export filters
      * @return string Exported log data
      */
@@ -492,7 +471,6 @@ class Api_Performance {
     /**
      * Get optimization recommendations
      * 
-     * @since 0.0.1
      * @return array Optimization recommendations
      */
     public function get_optimization_recommendations() {
@@ -581,7 +559,6 @@ class Api_Performance {
     /**
      * Get cost analysis
      * 
-     * @since 0.0.1
      * @param string $period Analysis period
      * @return array Cost analysis
      */
@@ -621,7 +598,6 @@ class Api_Performance {
     /**
      * Clear performance cache
      * 
-     * @since 0.0.1
      * @return void
      */
     public function clear_cache() {
@@ -643,7 +619,6 @@ class Api_Performance {
     /**
      * Get performance trends
      * 
-     * @since 0.0.1
      * @param int $days Number of days to analyze
      * @return array Performance trends
      */
@@ -678,7 +653,6 @@ class Api_Performance {
     /**
      * Generate performance report
      * 
-     * @since 0.0.1
      * @param array $options Report options
      * @return array Performance report
      */
@@ -723,7 +697,6 @@ class Api_Performance {
     /**
      * Update performance configuration
      * 
-     * @since 0.0.1
      * @param array $new_config New configuration
      * @return bool True on success
      */
@@ -751,7 +724,6 @@ class Api_Performance {
     /**
      * Validate performance configuration
      * 
-     * @since 0.0.1
      * @param array $config Configuration to validate
      * @return array Validation result
      */

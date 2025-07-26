@@ -7,7 +7,6 @@
  * Responsible for: WordPress hook registration, component hook coordination
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * Centralizes all hook registration for the plugin and coordinates
  * hook registration between different components.
  * 
- * @since 0.0.1
  */
 class Hook_Manager {
     
     /**
      * Component loader instance
      * 
-     * @since 0.0.1
      * @var Component_Loader
      */
     private $component_loader;
@@ -38,7 +35,6 @@ class Hook_Manager {
     /**
      * Registered hooks registry
      * 
-     * @since 0.0.1
      * @var array
      */
     private $hooks_registry = array();
@@ -46,7 +42,6 @@ class Hook_Manager {
     /**
      * Constructor
      * 
-     * @since 0.0.1
      * @param Component_Loader $component_loader Component loader instance
      */
     public function __construct($component_loader) {
@@ -56,7 +51,6 @@ class Hook_Manager {
     /**
      * Register all WordPress hooks
      * 
-     * @since 0.0.1
      */
     public function register_all() {
         // Register core WordPress hooks
@@ -75,7 +69,6 @@ class Hook_Manager {
     /**
      * Register core WordPress hooks
      * 
-     * @since 0.0.1
      */
     private function register_core_hooks() {
         $main_instance = \Nexus\Translator\Main::get_instance();
@@ -97,7 +90,6 @@ class Hook_Manager {
     /**
      * Register plugin-specific hooks
      * 
-     * @since 0.0.1
      */
     private function register_plugin_hooks() {
         // Translation hooks (for future use)
@@ -124,7 +116,6 @@ class Hook_Manager {
     /**
      * Register component-specific hooks
      * 
-     * @since 0.0.1
      */
     private function register_component_hooks() {
         $components = $this->component_loader->get_all_components();
@@ -137,7 +128,6 @@ class Hook_Manager {
     /**
      * Register hooks for a specific component
      * 
-     * @since 0.0.1
      * @param string $component_name Component name
      */
     private function register_component_hook($component_name) {
@@ -158,7 +148,6 @@ class Hook_Manager {
     /**
      * Register a hook in the registry
      * 
-     * @since 0.0.1
      * @param string $type Hook type (core, plugin, component)
      * @param string $hook Hook name
      * @param mixed $callback Callback function
@@ -180,7 +169,6 @@ class Hook_Manager {
     /**
      * WordPress init hook handler
      * 
-     * @since 0.0.1
      */
     public function init() {
         // Check if main instance is initialized
@@ -195,7 +183,6 @@ class Hook_Manager {
     /**
      * WordPress loaded hook handler
      * 
-     * @since 0.0.1
      */
     public function wp_loaded() {
         // Check if main instance is initialized
@@ -210,7 +197,6 @@ class Hook_Manager {
     /**
      * WordPress admin init hook handler
      * 
-     * @since 0.0.1
      */
     public function admin_init() {
         // Check if main instance is initialized
@@ -225,7 +211,6 @@ class Hook_Manager {
     /**
      * Get hooks registry
      * 
-     * @since 0.0.1
      * @return array Hooks registry
      */
     public function get_hooks_registry() {
@@ -235,7 +220,6 @@ class Hook_Manager {
     /**
      * Get hooks by type
      * 
-     * @since 0.0.1
      * @param string $type Hook type
      * @return array Hooks of specified type
      */
@@ -246,7 +230,6 @@ class Hook_Manager {
     /**
      * Get hook registration statistics
      * 
-     * @since 0.0.1
      * @return array Hook statistics
      */
     public function get_hook_stats() {
@@ -267,7 +250,6 @@ class Hook_Manager {
     /**
      * Remove all hooks for a component
      * 
-     * @since 0.0.1
      * @param string $component_name Component name
      * @return bool True on success, false on failure
      */
@@ -301,7 +283,6 @@ class Hook_Manager {
     /**
      * Add custom hook with registration tracking
      * 
-     * @since 0.0.1
      * @param string $hook_name Hook name
      * @param callable $callback Callback function
      * @param int $priority Hook priority
@@ -323,7 +304,6 @@ class Hook_Manager {
     /**
      * Add custom filter with registration tracking
      * 
-     * @since 0.0.1
      * @param string $filter_name Filter name
      * @param callable $callback Callback function
      * @param int $priority Filter priority

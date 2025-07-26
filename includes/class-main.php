@@ -7,7 +7,6 @@
  * Responsible for: Core orchestration, singleton pattern, plugin lifecycle
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * This class serves as the central hub, delegating specific responsibilities
  * to specialized handlers for maintainability and modularity.
  * 
- * @since 0.0.1
  */
 class Main {
     
     /**
      * Single instance of this class
      * 
-     * @since 0.0.1
      * @var Main
      */
     private static $instance = null;
@@ -38,7 +35,6 @@ class Main {
     /**
      * Plugin version
      * 
-     * @since 0.0.1
      * @var string
      */
     private $version;
@@ -46,7 +42,6 @@ class Main {
     /**
      * Component loader instance
      * 
-     * @since 0.0.1
      * @var Component_Loader
      */
     private $component_loader;
@@ -54,7 +49,6 @@ class Main {
     /**
      * Hook manager instance
      * 
-     * @since 0.0.1
      * @var Hook_Manager
      */
     private $hook_manager;
@@ -62,7 +56,6 @@ class Main {
     /**
      * Emergency handler instance
      * 
-     * @since 0.0.1
      * @var Emergency_Handler
      */
     private $emergency_handler;
@@ -70,7 +63,6 @@ class Main {
     /**
      * Plugin initialization status
      * 
-     * @since 0.0.1
      * @var bool
      */
     private $initialized = false;
@@ -78,7 +70,6 @@ class Main {
     /**
      * Constructor - private to enforce singleton
      * 
-     * @since 0.0.1
      */
     private function __construct() {
         $this->version = NEXUS_AI_TRANSLATOR_VERSION;
@@ -88,7 +79,6 @@ class Main {
     /**
      * Get singleton instance
      * 
-     * @since 0.0.1
      * @return Main Single instance of Main class
      */
     public static function get_instance() {
@@ -101,7 +91,6 @@ class Main {
     /**
      * Prevent cloning
      * 
-     * @since 0.0.1
      */
     public function __clone() {
         _doing_it_wrong(__FUNCTION__, __('Cannot clone singleton instance.', NEXUS_AI_TRANSLATOR_TEXT_DOMAIN), $this->version);
@@ -110,7 +99,6 @@ class Main {
     /**
      * Prevent unserialization
      * 
-     * @since 0.0.1
      */
     public function __wakeup() {
         _doing_it_wrong(__FUNCTION__, __('Cannot unserialize singleton instance.', NEXUS_AI_TRANSLATOR_TEXT_DOMAIN), $this->version);
@@ -119,7 +107,6 @@ class Main {
     /**
      * Initialize the plugin
      * 
-     * @since 0.0.1
      */
     private function init() {
         // Load helper classes first
@@ -159,7 +146,6 @@ class Main {
     /**
      * Load helper classes
      * 
-     * @since 0.0.1
      */
     private function load_helper_classes() {
         $helper_files = array(
@@ -179,7 +165,6 @@ class Main {
     /**
      * Get component loader instance
      * 
-     * @since 0.0.1
      * @return Component_Loader|null
      */
     public function get_component_loader() {
@@ -189,7 +174,6 @@ class Main {
     /**
      * Get hook manager instance
      * 
-     * @since 0.0.1
      * @return Hook_Manager|null
      */
     public function get_hook_manager() {
@@ -199,7 +183,6 @@ class Main {
     /**
      * Get emergency handler instance
      * 
-     * @since 0.0.1
      * @return Emergency_Handler
      */
     public function get_emergency_handler() {
@@ -209,7 +192,6 @@ class Main {
     /**
      * Get a component instance (delegated to component loader)
      * 
-     * @since 0.0.1
      * @param string $component Component name
      * @return object|null Component instance or null if not found
      */
@@ -224,7 +206,6 @@ class Main {
     /**
      * Register a module for extensibility (delegated to component loader)
      * 
-     * @since 0.0.1
      * @param string $module_name Module name
      * @param array $module_data Module configuration
      * @return bool True on success, false on failure
@@ -240,7 +221,6 @@ class Main {
     /**
      * Check if plugin is properly initialized
      * 
-     * @since 0.0.1
      * @return bool True if initialized, false otherwise
      */
     public function is_initialized() {
@@ -250,7 +230,6 @@ class Main {
     /**
      * Get plugin version
      * 
-     * @since 0.0.1
      * @return string Plugin version
      */
     public function get_version() {
@@ -260,7 +239,6 @@ class Main {
     /**
      * Plugin activation handler
      * 
-     * @since 0.0.1
      */
     public function plugin_activated() {
         // Clear any emergency mode flags on activation
@@ -277,7 +255,6 @@ class Main {
     /**
      * Plugin deactivation handler
      * 
-     * @since 0.0.1
      */
     public function plugin_deactivated() {
         // Clean up transients but preserve settings
@@ -289,7 +266,6 @@ class Main {
     /**
      * Set default plugin options
      * 
-     * @since 0.0.1
      */
     private function set_default_options() {
         $defaults = array(
@@ -312,7 +288,6 @@ class Main {
     /**
      * Clean up plugin transients
      * 
-     * @since 0.0.1
      */
     private function cleanup_transients() {
         $transients = array(

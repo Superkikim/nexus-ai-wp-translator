@@ -7,7 +7,6 @@
  * Responsible for: Error handling, retry logic, validation, emergency integration
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * Handles error management, retry logic, validation, and emergency system integration.
  * Works with the core Api class to provide robust translation processing.
  * 
- * @since 0.0.1
  */
 class Api_Handler {
     
     /**
      * Core API instance
      * 
-     * @since 0.0.1
      * @var Api
      */
     private $api;
@@ -38,7 +35,6 @@ class Api_Handler {
     /**
      * Languages instance
      * 
-     * @since 0.0.1
      * @var Languages
      */
     private $languages;
@@ -46,7 +42,6 @@ class Api_Handler {
     /**
      * Handler configuration
      * 
-     * @since 0.0.1
      * @var array
      */
     private $config = array();
@@ -54,7 +49,6 @@ class Api_Handler {
     /**
      * Constructor
      * 
-     * @since 0.0.1
      * @param Api $api Core API instance
      */
     public function __construct($api) {
@@ -69,7 +63,6 @@ class Api_Handler {
     /**
      * Register WordPress hooks
      * 
-     * @since 0.0.1
      * @return void
      */
     public function register_hooks() {
@@ -83,7 +76,6 @@ class Api_Handler {
     /**
      * Load handler configuration
      * 
-     * @since 0.0.1
      * @return void
      */
     private function load_config() {
@@ -101,7 +93,6 @@ class Api_Handler {
     /**
      * Handle translation with full error handling
      * 
-     * @since 0.0.1
      * @param string $text Text to translate
      * @param string $source_language Source language
      * @param string $target_language Target language
@@ -210,7 +201,6 @@ class Api_Handler {
     /**
      * Make API request with retry logic
      * 
-     * @since 0.0.1
      * @param array $data Request data
      * @return array API response
      */
@@ -251,7 +241,6 @@ class Api_Handler {
     /**
      * Check if error is retryable
      * 
-     * @since 0.0.1
      * @param array $error_response Error response
      * @return bool True if retryable
      */
@@ -272,7 +261,6 @@ class Api_Handler {
     /**
      * Validate translation request
      * 
-     * @since 0.0.1
      * @param string $text Text to translate
      * @param string $source_language Source language
      * @param string $target_language Target language
@@ -307,7 +295,6 @@ class Api_Handler {
     /**
      * Check rate limits
      * 
-     * @since 0.0.1
      * @return array Rate limit check result
      */
     private function check_rate_limit() {
@@ -340,7 +327,6 @@ class Api_Handler {
     /**
      * Build translation prompt
      * 
-     * @since 0.0.1
      * @param string $text Text to translate
      * @param string $source_lang Source language
      * @param string $target_lang Target language
@@ -380,7 +366,6 @@ class Api_Handler {
     /**
      * Extract translation from API response
      * 
-     * @since 0.0.1
      * @param array $response_data API response
      * @return string Translated text
      */
@@ -395,7 +380,6 @@ class Api_Handler {
     /**
      * Get recommended model for language pair
      * 
-     * @since 0.0.1
      * @param string $source_lang Source language
      * @param string $target_lang Target language
      * @return string Recommended model
@@ -426,7 +410,6 @@ class Api_Handler {
     /**
      * Log retry attempt
      * 
-     * @since 0.0.1
      * @param int $retry_count Current retry count
      * @param float $delay Delay before retry
      * @param array $error_response Previous error response
@@ -445,7 +428,6 @@ class Api_Handler {
     /**
      * Check if error should trigger emergency mode
      * 
-     * @since 0.0.1
      * @param array $error_response Error response
      * @return void
      */
@@ -468,7 +450,6 @@ class Api_Handler {
     /**
      * Handle emergency trigger
      * 
-     * @since 0.0.1
      * @param string $trigger_type Trigger type
      * @param array $trigger_data Trigger data
      * @return void
@@ -490,7 +471,6 @@ class Api_Handler {
     /**
      * Daily cleanup
      * 
-     * @since 0.0.1
      * @return void
      */
     public function daily_cleanup() {
@@ -512,7 +492,6 @@ class Api_Handler {
     /**
      * Get rate limit status
      * 
-     * @since 0.0.1
      * @return array Rate limit information
      */
     public function get_rate_limit_status() {
@@ -533,7 +512,6 @@ class Api_Handler {
     /**
      * Get error statistics
      * 
-     * @since 0.0.1
      * @return array Error statistics
      */
     public function get_error_stats() {
@@ -550,7 +528,6 @@ class Api_Handler {
     /**
      * Update handler configuration
      * 
-     * @since 0.0.1
      * @param array $new_config New configuration
      * @return bool True on success
      */
@@ -574,7 +551,6 @@ class Api_Handler {
     /**
      * Validate handler configuration
      * 
-     * @since 0.0.1
      * @param array $config Configuration to validate
      * @return array Validation result
      */
@@ -632,7 +608,6 @@ class Api_Handler {
     /**
      * Get default configuration
      * 
-     * @since 0.0.1
      * @return array Default configuration
      */
     private function get_default_config() {
@@ -647,7 +622,6 @@ class Api_Handler {
     /**
      * Create success response
      * 
-     * @since 0.0.1
      * @param array $data Response data
      * @param string $message Success message
      * @return array Success response
@@ -664,7 +638,6 @@ class Api_Handler {
     /**
      * Create error response
      * 
-     * @since 0.0.1
      * @param string $message Error message
      * @param string $code Error code
      * @param array $details Additional details
@@ -683,7 +656,6 @@ class Api_Handler {
     /**
      * Create emergency mode response
      * 
-     * @since 0.0.1
      * @return array Emergency response
      */
     private function create_emergency_response() {

@@ -7,7 +7,6 @@
  * Responsible for: Language definitions, basic operations, WordPress integration
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -25,14 +24,12 @@ if (!defined('ABSPATH')) {
  * Handles language registry, basic operations, and coordinates with helper classes.
  * This is the main orchestrator for all language-related functionality.
  * 
- * @since 0.0.1
  */
 class Languages extends Abstract_Module {
     
     /**
      * Supported languages registry
      * 
-     * @since 0.0.1
      * @var array
      */
     private $supported_languages = array();
@@ -40,7 +37,6 @@ class Languages extends Abstract_Module {
     /**
      * Available translation pairs
      * 
-     * @since 0.0.1
      * @var array
      */
     private $translation_pairs = array();
@@ -48,7 +44,6 @@ class Languages extends Abstract_Module {
     /**
      * Language validator instance
      * 
-     * @since 0.0.1
      * @var Language_Validator
      */
     private $validator;
@@ -56,7 +51,6 @@ class Languages extends Abstract_Module {
     /**
      * Language AJAX handler instance
      * 
-     * @since 0.0.1
      * @var Language_Ajax
      */
     private $ajax_handler;
@@ -64,7 +58,6 @@ class Languages extends Abstract_Module {
     /**
      * Language analytics instance
      * 
-     * @since 0.0.1
      * @var Language_Analytics
      */
     private $analytics;
@@ -72,7 +65,6 @@ class Languages extends Abstract_Module {
     /**
      * Get module name/identifier
      * 
-     * @since 0.0.1
      * @return string Module name
      */
     protected function get_module_name() {
@@ -82,7 +74,6 @@ class Languages extends Abstract_Module {
     /**
      * Module-specific initialization
      * 
-     * @since 0.0.1
      * @return void
      */
     protected function module_init() {
@@ -100,7 +91,6 @@ class Languages extends Abstract_Module {
     /**
      * Register WordPress hooks
      * 
-     * @since 0.0.1
      * @return void
      */
     protected function register_hooks() {
@@ -120,7 +110,6 @@ class Languages extends Abstract_Module {
     /**
      * Load helper class files
      * 
-     * @since 0.0.1
      * @return void
      */
     private function load_helper_classes() {
@@ -141,7 +130,6 @@ class Languages extends Abstract_Module {
     /**
      * Initialize helper components
      * 
-     * @since 0.0.1
      * @return void
      */
     private function init_helper_components() {
@@ -164,7 +152,6 @@ class Languages extends Abstract_Module {
     /**
      * Initialize supported languages registry
      * 
-     * @since 0.0.1
      * @return void
      */
     private function init_supported_languages() {
@@ -308,7 +295,6 @@ class Languages extends Abstract_Module {
     /**
      * Initialize translation pairs from language data
      * 
-     * @since 0.0.1
      * @return void
      */
     private function init_translation_pairs() {
@@ -343,7 +329,6 @@ class Languages extends Abstract_Module {
     /**
      * Get all supported languages
      * 
-     * @since 0.0.1
      * @return array Supported languages
      */
     public function get_supported_languages() {
@@ -353,7 +338,6 @@ class Languages extends Abstract_Module {
     /**
      * Get language information by code
      * 
-     * @since 0.0.1
      * @param string $language_code Language code
      * @return array|false Language data or false if not found
      */
@@ -365,7 +349,6 @@ class Languages extends Abstract_Module {
     /**
      * Check if language is supported
      * 
-     * @since 0.0.1
      * @param string $language_code Language code
      * @return bool True if supported
      */
@@ -376,7 +359,6 @@ class Languages extends Abstract_Module {
     /**
      * Get available translation pairs
      * 
-     * @since 0.0.1
      * @param string $source_code Optional source language filter
      * @return array Translation pairs
      */
@@ -398,7 +380,6 @@ class Languages extends Abstract_Module {
     /**
      * Check if translation pair is supported
      * 
-     * @since 0.0.1
      * @param string $source_code Source language code
      * @param string $target_code Target language code
      * @return bool True if supported
@@ -411,7 +392,6 @@ class Languages extends Abstract_Module {
     /**
      * Get translation pair information
      * 
-     * @since 0.0.1
      * @param string $source_code Source language code
      * @param string $target_code Target language code
      * @return array|false Pair information or false if not supported
@@ -425,7 +405,6 @@ class Languages extends Abstract_Module {
     /**
      * Get WordPress locale for language code
      * 
-     * @since 0.0.1
      * @param string $language_code Language code
      * @return string WordPress locale
      */
@@ -437,7 +416,6 @@ class Languages extends Abstract_Module {
     /**
      * Get language direction (LTR/RTL)
      * 
-     * @since 0.0.1
      * @param string $language_code Language code
      * @return string Direction ('ltr' or 'rtl')
      */
@@ -449,7 +427,6 @@ class Languages extends Abstract_Module {
     /**
      * Get language family
      * 
-     * @since 0.0.1
      * @param string $language_code Language code
      * @return string Language family
      */
@@ -461,7 +438,6 @@ class Languages extends Abstract_Module {
     /**
      * Get language script system
      * 
-     * @since 0.0.1
      * @param string $language_code Language code
      * @return string Script system
      */
@@ -473,7 +449,6 @@ class Languages extends Abstract_Module {
     /**
      * Get formatted language list for dropdowns
      * 
-     * @since 0.0.1
      * @param bool $include_native Include native names
      * @param string $filter_family Optional family filter
      * @return array Formatted language list
@@ -500,7 +475,6 @@ class Languages extends Abstract_Module {
     /**
      * Get available target languages for source
      * 
-     * @since 0.0.1
      * @param string $source_code Source language code
      * @return array Available target languages
      */
@@ -524,7 +498,6 @@ class Languages extends Abstract_Module {
     /**
      * Delegate validation to validator component
      * 
-     * @since 0.0.1
      * @param string $source_code Source language code
      * @param string $target_code Target language code
      * @return array Validation result
@@ -541,7 +514,6 @@ class Languages extends Abstract_Module {
     /**
      * Get validator instance
      * 
-     * @since 0.0.1
      * @return Language_Validator|null Validator instance
      */
     public function get_validator() {
@@ -551,7 +523,6 @@ class Languages extends Abstract_Module {
     /**
      * Get AJAX handler instance
      * 
-     * @since 0.0.1
      * @return Language_Ajax|null AJAX handler instance
      */
     public function get_ajax_handler() {
@@ -561,7 +532,6 @@ class Languages extends Abstract_Module {
     /**
      * Get analytics instance
      * 
-     * @since 0.0.1
      * @return Language_Analytics|null Analytics instance
      */
     public function get_analytics() {
@@ -571,7 +541,6 @@ class Languages extends Abstract_Module {
     /**
      * Admin initialization hook
      * 
-     * @since 0.0.1
      * @return void
      */
     public function admin_init() {
@@ -584,7 +553,6 @@ class Languages extends Abstract_Module {
     /**
      * Helper: Calculate translation accuracy for pair
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return string Accuracy level
@@ -606,7 +574,6 @@ class Languages extends Abstract_Module {
     /**
      * Helper: Calculate translation complexity for pair
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return string Complexity level
@@ -642,7 +609,6 @@ class Languages extends Abstract_Module {
     /**
      * Helper: Check if languages are from same family
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return bool True if same family
@@ -657,7 +623,6 @@ class Languages extends Abstract_Module {
     /**
      * Helper: Check if languages use same script
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return bool True if same script
@@ -672,7 +637,6 @@ class Languages extends Abstract_Module {
     /**
      * Fallback basic validation when validator not available
      * 
-     * @since 0.0.1
      * @param string $source_code Source language code
      * @param string $target_code Target language code
      * @return array Basic validation result

@@ -7,7 +7,6 @@
  * Responsible for: Usage tracking, metrics collection, performance analytics
  * 
  * @package Nexus\Translator
- * @since 0.0.1
  */
 
 namespace Nexus\Translator;
@@ -23,14 +22,12 @@ if (!defined('ABSPATH')) {
  * Handles tracking of language usage, translation metrics, performance data,
  * and provides analytics insights for optimization.
  * 
- * @since 0.0.1
  */
 class Language_Analytics {
     
     /**
      * Languages instance reference
      * 
-     * @since 0.0.1
      * @var Languages
      */
     private $languages;
@@ -38,7 +35,6 @@ class Language_Analytics {
     /**
      * Analytics data cache
      * 
-     * @since 0.0.1
      * @var array
      */
     private $analytics_cache = array();
@@ -46,7 +42,6 @@ class Language_Analytics {
     /**
      * Constructor
      * 
-     * @since 0.0.1
      * @param Languages $languages Languages instance
      */
     public function __construct($languages) {
@@ -56,7 +51,6 @@ class Language_Analytics {
     /**
      * Register WordPress hooks
      * 
-     * @since 0.0.1
      * @return void
      */
     public function register_hooks() {
@@ -78,7 +72,6 @@ class Language_Analytics {
     /**
      * Track language pair usage
      * 
-     * @since 0.0.1
      * @param string $source_code Source language code
      * @param string $target_code Target language code
      * @param array $context Additional context
@@ -107,7 +100,6 @@ class Language_Analytics {
     /**
      * Track translation completion
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @param array $metrics Translation metrics
@@ -143,7 +135,6 @@ class Language_Analytics {
     /**
      * Track translation failure
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @param array $error_data Error information
@@ -174,7 +165,6 @@ class Language_Analytics {
     /**
      * Track AJAX request performance
      * 
-     * @since 0.0.1
      * @param string $endpoint Endpoint name
      * @param array $request_data Request data
      * @param bool $success Whether request was successful
@@ -196,7 +186,6 @@ class Language_Analytics {
     /**
      * Get language usage statistics
      * 
-     * @since 0.0.1
      * @param string $period Time period ('day', 'week', 'month', 'year')
      * @return array Usage statistics
      */
@@ -231,7 +220,6 @@ class Language_Analytics {
     /**
      * Get complexity details for a language pair
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return array Complexity details
@@ -296,7 +284,6 @@ class Language_Analytics {
     /**
      * Handle analytics events
      * 
-     * @since 0.0.1
      * @param string $event_name Event name
      * @param array $event_data Event data
      * @return void
@@ -331,7 +318,6 @@ class Language_Analytics {
     /**
      * Track plugin load time
      * 
-     * @since 0.0.1
      * @return void
      */
     public function track_plugin_load_time() {
@@ -350,7 +336,6 @@ class Language_Analytics {
     /**
      * Track settings updates
      * 
-     * @since 0.0.1
      * @param mixed $old_value Old value
      * @param mixed $new_value New value
      * @param string $option Option name
@@ -384,7 +369,6 @@ class Language_Analytics {
     /**
      * Clean up old analytics data
      * 
-     * @since 0.0.1
      * @param int $days_to_keep Number of days to keep data
      * @return void
      */
@@ -415,7 +399,6 @@ class Language_Analytics {
     /**
      * Store analytics data
      * 
-     * @since 0.0.1
      * @param string $type Data type
      * @param array $data Data to store
      * @return void
@@ -440,7 +423,6 @@ class Language_Analytics {
     /**
      * Increment usage counter
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return void
@@ -461,7 +443,6 @@ class Language_Analytics {
     /**
      * Increment success counter
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return void
@@ -482,7 +463,6 @@ class Language_Analytics {
     /**
      * Increment failure counter
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return void
@@ -503,7 +483,6 @@ class Language_Analytics {
     /**
      * Get date condition for queries
      * 
-     * @since 0.0.1
      * @param string $period Time period
      * @return string Date condition
      */
@@ -525,7 +504,6 @@ class Language_Analytics {
     /**
      * Get total translations for period
      * 
-     * @since 0.0.1
      * @param string $date_condition Date condition
      * @return int Total translations
      */
@@ -541,7 +519,6 @@ class Language_Analytics {
     /**
      * Get most used language pairs
      * 
-     * @since 0.0.1
      * @param string $date_condition Date condition
      * @param int $limit Number of pairs to return
      * @return array Most used pairs
@@ -567,7 +544,6 @@ class Language_Analytics {
     /**
      * Get success rate for period
      * 
-     * @since 0.0.1
      * @param string $date_condition Date condition
      * @return float Success rate percentage
      */
@@ -592,7 +568,6 @@ class Language_Analytics {
     /**
      * Get average execution time
      * 
-     * @since 0.0.1
      * @param string $date_condition Date condition
      * @return float Average execution time in seconds
      */
@@ -616,7 +591,6 @@ class Language_Analytics {
     /**
      * Get language distribution
      * 
-     * @since 0.0.1
      * @param string $date_condition Date condition
      * @return array Language usage distribution
      */
@@ -643,7 +617,6 @@ class Language_Analytics {
     /**
      * Get complexity breakdown
      * 
-     * @since 0.0.1
      * @param string $date_condition Date condition
      * @return array Complexity distribution
      */
@@ -672,7 +645,6 @@ class Language_Analytics {
     /**
      * Get pair performance history
      * 
-     * @since 0.0.1
      * @param string $source_code Source language
      * @param string $target_code Target language
      * @return array Performance history
@@ -704,7 +676,6 @@ class Language_Analytics {
     /**
      * Calculate difficulty score
      * 
-     * @since 0.0.1
      * @param array $complexity_factors Complexity factors
      * @return string Difficulty level
      */
@@ -739,7 +710,6 @@ class Language_Analytics {
     /**
      * Handle settings reset event
      * 
-     * @since 0.0.1
      * @param array $event_data Event data
      * @return void
      */
@@ -756,7 +726,6 @@ class Language_Analytics {
     /**
      * Handle AJAX performance event
      * 
-     * @since 0.0.1
      * @param array $event_data Event data
      * @return void
      */
@@ -773,7 +742,6 @@ class Language_Analytics {
     /**
      * Handle settings correction event
      * 
-     * @since 0.0.1
      * @param array $event_data Event data
      * @return void
      */
